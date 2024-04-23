@@ -1,0 +1,19 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getFirestore } from 'firebase/firestore';
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAmuuaqvpBpsArvvRIRutZSBdEJfa40BK8",
+  authDomain: "babytracker-b2323.firebaseapp.com",
+  projectId: "babytracker-b2323",
+  storageBucket: "babytracker-b2323.appspot.com",
+  messagingSenderId: "847885705138",
+  appId: "1:847885705138:web:e40d62079a600541caceab"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);

@@ -15,7 +15,6 @@
   import { onMount, onDestroy } from "svelte";
 
   let foodStart,
-    foodDuration = "",
     foodType,
     foodAmount = "";
   let sleepStart, currentSleepDocId;
@@ -28,11 +27,10 @@
     addDoc(collection(db, "entries"), {
       type: "food",
       start: startTimestamp,
-      duration: parseInt(foodDuration),
       foodType,
       amount: parseInt(foodAmount),
     });
-    foodStart = foodDuration = foodType = foodAmount = ""; // Reset form
+    foodStart = foodType = foodAmount = ""; // Reset form
   }
 
   function startSleep() {
@@ -55,6 +53,19 @@
     });
     isSleeping = false;
     stopClock();
+  }
+
+  function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    // Creating a padded string for minutes and seconds for uniformity
+    const paddedMinutes = String(minutes).padStart(2, "0");
+    const paddedSeconds = String(remainingSeconds).padStart(2, "0");
+
+    // Creating the final formatted string
+    return `${hours}:${paddedMinutes}:${paddedSeconds}`;
   }
 
   function startClock() {
@@ -121,17 +132,12 @@
     <button on:click={startSleep} disabled={isSleeping}>Start Sleep</button>
     {#if isSleeping}
       <button on:click={endSleep}>End Sleep</button>
-      <p>Sleeping for {sleepDuration} seconds.</p>
+      <p>Lio slaapt al {formatTime(sleepDuration)}.</p>
     {/if}
   </div>
   <div>
     <button on:click={() => (foodStart = new Date())}>Start Food Entry</button>
     {#if foodStart}
-      <input
-        type="number"
-        bind:value={foodDuration}
-        placeholder="Duration (min)"
-      />
       <select bind:value={foodType}>
         <option value="">Select Food Type</option>
         <option value="formula">Infant Formula</option>

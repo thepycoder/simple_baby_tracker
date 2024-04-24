@@ -14,23 +14,37 @@
   } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
 
-  let foodStart,
-    foodType,
-    foodAmount = "";
+  let foodType,
+    foodAmount = "",
+    currentFoodDocId;
   let sleepStart, currentSleepDocId;
   let entries = [];
   let isSleeping = false;
+  let isEating = false;
   let clockInterval;
 
-  function addFood() {
-    const startTimestamp = foodStart ? new Date(foodStart) : serverTimestamp();
-    addDoc(collection(db, "entries"), {
-      type: "food",
-      start: startTimestamp,
-      foodType,
-      amount: parseInt(foodAmount),
+  function startFood() {
+    const startTimestamp = serverTimestamp();
+    console.log(startTimestamp);
+    isEating = true;
+    db.collection("entries")
+      .add({
+        start: startTimestamp,
+        type: "food",
+      })
+      .then((docRef) => {
+        currentFoodDocId = docRef.id; // Store doc id to update later
+      });
+  }
+
+  function endFood() {
+    const endTimestamp = serverTimestamp();
+    updateDoc(doc(db, "entries", currentFoodDocId), {
+      amount: foodAmount,
+      end: endTimestamp,
     });
-    foodStart = foodType = foodAmount = ""; // Reset form
+    isEating = false;
+    foodType = foodAmount = ""; // Reset form
   }
 
   function startSleep() {
@@ -90,6 +104,7 @@
     const q = query(collection(db, "entries"), orderBy("start", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let foundActiveSleep = false;
+      let foundActiveFood = false;
       entries = snapshot.docs.map((doc) => {
         const data = doc.data();
         if (data.type === "sleep" && !data.end) {
@@ -101,12 +116,18 @@
             sleepStart = data.start.toDate();
             startClock();
           }
-        } else if (
-          data.type === "sleep" &&
-          data.end &&
-          doc.id === currentSleepDocId
-        ) {
+        } else if (data.end && doc.id === currentSleepDocId) {
           stopClock(); // Ensure the clock stops if this document is the current sleep session
+        }
+        if (data.type === "food" && !data.end) {
+          if (!foundActiveFood) {
+            // Check if there's an ongoing sleep not yet ended
+            isEating = true;
+            foundActiveFood = true;
+            currentFoodDocId = doc.id;
+          }
+        } else if (data.end && doc.id === currentFoodDocId) {
+          //   stopClock(); // Ensure the clock stops if this document is the current sleep session
         }
         return {
           id: doc.id,
@@ -127,7 +148,9 @@
 </script>
 
 <main>
-  <h1>Tracker</h1>
+  <h1>
+    LIO {#if isSleeping}is aan het slapen{/if}{#if isEating}is aan het eten{/if}
+  </h1>
   <div>
     <button on:click={startSleep} disabled={isSleeping}>Start Sleep</button>
     {#if isSleeping}
@@ -136,15 +159,15 @@
     {/if}
   </div>
   <div>
-    <button on:click={() => (foodStart = new Date())}>Start Food Entry</button>
-    {#if foodStart}
+    <button on:click={startFood} disabled={isEating}>Start Food Entry</button>
+    {#if isEating}
       <select bind:value={foodType}>
         <option value="">Select Food Type</option>
         <option value="formula">Infant Formula</option>
         <option value="solid">Solid Food</option>
       </select>
       <input type="number" bind:value={foodAmount} placeholder="Amount" />
-      <button on:click={addFood}>Log Food Entry</button>
+      <button on:click={endFood}>Log Food Entry</button>
     {/if}
   </div>
   <ul>

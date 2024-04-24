@@ -23,55 +23,35 @@
   let isSleeping = false;
   let isEating = false;
   let clockInterval;
+  let sleepDuration = 0;
 
+  // Enhanced local display functions
   function startFood() {
     const startTimestamp = serverTimestamp();
-    sleepStart = new Date(); // For local display
     isEating = true;
     addDoc(collection(db, "entries"), {
       type: "food",
       start: startTimestamp,
+      amount: 0, // Initialize with 0 amount
     }).then((docRef) => {
-      currentFoodDocId = docRef.id; // Store doc id to update later
+      currentFoodDocId = docRef.id;
     });
   }
 
   function endFood() {
     const endTimestamp = serverTimestamp();
-    updateDoc(doc(db, "entries", currentFoodDocId), {
-      amount: foodAmount,
-      end: endTimestamp,
-    })
-      .then(() => {
-        isEating = false;
-        foodType = "";
-        foodAmount = ""; // Reset form only after Firestore confirms the update
-      })
-      .catch((error) => {
-        console.error("Error updating document: ", error);
-      });
+    if (currentFoodDocId) {
+      updateDoc(doc(db, "entries", currentFoodDocId), {
+        amount: foodAmount,
+        end: endTimestamp,
+      }).then(() => resetFood());
+    }
   }
 
-  function startSleep() {
-    const startTimestamp = serverTimestamp();
-    sleepStart = new Date(); // For local display
-    isSleeping = true;
-    addDoc(collection(db, "entries"), {
-      type: "sleep",
-      start: startTimestamp,
-    }).then((docRef) => {
-      currentSleepDocId = docRef.id; // Store doc id to update later
-    });
-    startClock();
-  }
-
-  function endSleep() {
-    const endTimestamp = serverTimestamp();
-    updateDoc(doc(db, "entries", currentSleepDocId), {
-      end: endTimestamp,
-    });
-    isSleeping = false;
-    stopClock();
+  function resetFood() {
+    isEating = false;
+    foodType = "";
+    foodAmount = "";
   }
 
   function formatTime(seconds) {
@@ -87,15 +67,46 @@
     return `${hours}:${paddedMinutes}:${paddedSeconds}`;
   }
 
+  function startSleep() {
+    const startTimestamp = serverTimestamp();
+    sleepStart = new Date();
+    isSleeping = true;
+    addDoc(collection(db, "entries"), {
+      type: "sleep",
+      start: startTimestamp,
+    }).then((docRef) => {
+      currentSleepDocId = docRef.id;
+      startClock();
+    });
+  }
+
+  function endSleep() {
+    const endTimestamp = serverTimestamp();
+    console.log(currentSleepDocId);
+    if (currentSleepDocId) {
+      updateDoc(doc(db, "entries", currentSleepDocId), {
+        end: endTimestamp,
+      }).then(() => resetSleep());
+    }
+  }
+
+  function resetSleep() {
+    isSleeping = false;
+    stopClock();
+  }
+
+  // Clock logic remains similar
   function startClock() {
     clearInterval(clockInterval);
-    clockInterval = setInterval(() => {
-      if (isSleeping) {
-        const now = new Date();
-        const elapsed = now - sleepStart;
-        sleepDuration = Math.floor(elapsed / 1000); // Update duration in seconds
-      }
-    }, 1000);
+    clockInterval = setInterval(updateSleepDuration, 1000);
+  }
+
+  function updateSleepDuration() {
+    if (isSleeping) {
+      const now = new Date();
+      const elapsed = now - sleepStart;
+      sleepDuration = Math.floor(elapsed / 1000);
+    }
   }
 
   function stopClock() {
@@ -103,52 +114,53 @@
     sleepDuration = 0;
   }
 
-  let sleepDuration = 0;
-
   onMount(() => {
-    const q = query(collection(db, "entries"), orderBy("start", "desc"));
+    const q = query(
+      collection(db, "entries"),
+      orderBy("start", "desc"),
+      limit(10)
+    );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      let foundActiveSleep = false;
-      let foundActiveFood = false;
-      console.log("Triggered onsnapshot!");
       entries = snapshot.docs.map((doc) => {
         const data = doc.data();
-        if (data.type === "sleep" && !data.end) {
-          if (!foundActiveSleep) {
-            // Check if there's an ongoing sleep not yet ended
-            isSleeping = true;
-            foundActiveSleep = true;
-            currentSleepDocId = doc.id;
-            sleepStart = data.start.toDate();
-            startClock();
-          }
-        } else if (data.end && doc.id === currentSleepDocId) {
-          stopClock(); // Ensure the clock stops if this document is the current sleep session
-        }
-        if (data.type === "food" && !data.end) {
-          if (!foundActiveFood) {
-            // Check if there's an ongoing sleep not yet ended
-            isEating = true;
-            foundActiveFood = true;
-            currentFoodDocId = doc.id;
-          }
-        }
         return {
           id: doc.id,
           ...data,
-          start: data.start ? data.start.toDate() : null,
+          start: data.start.toDate(),
           end: data.end ? data.end.toDate() : null,
         };
       });
-      if (!foundActiveSleep && isSleeping) {
-        isSleeping = false; // Update state if no active sleep is found in the latest fetch
-      }
+      // Update current activity states based on the latest entries
+      updateCurrentActivities();
     });
-    return () => {
-      unsubscribe();
-      stopClock();
-    };
+    return () => unsubscribe();
   });
+
+  function updateCurrentActivities() {
+    let activeSleepEntry = entries.find(
+      (entry) => entry.type === "sleep" && !entry.end
+    );
+    let activeFoodEntry = entries.find(
+      (entry) => entry.type === "food" && !entry.end
+    );
+
+    if (activeSleepEntry) {
+      currentSleepDocId = activeSleepEntry.id;
+      sleepStart = activeSleepEntry.start;
+      if (!isSleeping) {
+        isSleeping = true;
+        startClock();
+      }
+    } else if (isSleeping) {
+      isSleeping = false;
+      stopClock();
+    }
+
+    isEating = !!activeFoodEntry;
+    if (activeFoodEntry) {
+      currentFoodDocId = activeFoodEntry.id;
+    }
+  }
 </script>
 
 <main>
@@ -156,9 +168,9 @@
     LIO {#if isSleeping}is aan het slapen{/if}{#if isEating}is aan het eten{/if}
   </h1>
   <div>
-    <button on:click={startSleep} disabled={isSleeping}>Start Sleep</button>
+    <button on:click={startSleep} disabled={isSleeping}>Start Slaapje</button>
     {#if isSleeping}
-      <button on:click={endSleep}>End Sleep</button>
+      <button on:click={endSleep}>Stop Slaapje</button>
       <p>Lio slaapt al {formatTime(sleepDuration)}.</p>
     {/if}
   </div>

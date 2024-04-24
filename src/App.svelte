@@ -163,19 +163,16 @@
   }
 </script>
 
-<main>
-  <h1>
-    LIO {#if isSleeping}is aan het slapen{/if}
-    {#if isEating}is aan het eten{/if}
-  </h1>
-  <div>
-    <button on:click={startSleep} disabled={isSleeping}>Start Slaapje</button>
+<main class:isEating class:isSleeping>
+  <h1>Lio's Activities Tracker</h1>
+  <section id="sleep-controls">
+    <button on:click={startSleep} disabled={isSleeping}>Start Sleep</button>
     {#if isSleeping}
-      <button on:click={endSleep}>Stop Slaapje</button>
-      <p>Lio slaapt al {formatTime(sleepDuration)}.</p>
+      <button on:click={endSleep}>Stop Sleep</button>
+      <p>Lio has been sleeping for {formatTime(sleepDuration)}.</p>
     {/if}
-  </div>
-  <div>
+  </section>
+  <section id="food-controls">
     <button on:click={startFood} disabled={isEating}>Start Food Entry</button>
     {#if isEating}
       <select bind:value={foodType}>
@@ -186,20 +183,24 @@
       <input type="number" bind:value={foodAmount} placeholder="Amount" />
       <button on:click={endFood}>Log Food Entry</button>
     {/if}
-  </div>
-  <ul>
+  </section>
+  <div class="entry-list">
     {#each entries as entry}
-      <li>
-        Type: {entry.type}, Start: {entry.start.toLocaleString()},
+      <div class="entry">
+        <p>Type: {entry.type}</p>
+        <p>Start: {entry.start.toLocaleString()}</p>
         {#if entry.duration}
-          Duration: {entry.duration} minutes{/if}
+          <p>Duration: {entry.duration} minutes</p>
+        {/if}
         {#if entry.amount}
-          Amount: {entry.amount}{/if}
+          <p>Amount: {entry.amount}</p>
+        {/if}
         {#if entry.end}
-          End: {entry.end.toLocaleString()}{/if}
-      </li>
+          <p>End: {entry.end.toLocaleString()}</p>
+        {/if}
+      </div>
     {/each}
-  </ul>
+  </div>
 </main>
 
 <style>
@@ -210,21 +211,40 @@
     justify-content: center;
     padding: 20px;
   }
-  div {
+  section {
     margin-bottom: 20px;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
   input,
   select,
   button {
     margin: 5px;
-  }
-  ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  li {
-    margin-bottom: 10px;
-    padding: 5px;
+    padding: 8px;
+    border-radius: 4px;
     border: 1px solid #ccc;
+  }
+  .entry-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .entry {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    width: 90%;
+  }
+  :global(.isSleeping) {
+    background-color: #90caf9; /* Light blue */
+    color: #0d47a1; /* Navy blue */
+  }
+  :global(.isEating) {
+    background-color: #a5d6a7; /* Light green */
+    color: #1b5e20; /* Dark green */
   }
 </style>

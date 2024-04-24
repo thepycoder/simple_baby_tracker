@@ -24,6 +24,9 @@
   let isEating = false;
   let clockInterval;
   let sleepDuration = 0;
+  let lastFoodStart, lastSleepEnd;
+  let foodSinceLast = "N/A",
+    sleepSinceLast = "N/A";
 
   // Enhanced local display functions
   function startFood() {
@@ -44,7 +47,11 @@
       updateDoc(doc(db, "entries", currentFoodDocId), {
         amount: foodAmount,
         end: endTimestamp,
-      }).then(() => resetFood());
+      }).then(() => {
+        lastFoodStart = new Date();
+        resetFood();
+        updateFoodSinceLast();
+      });
     }
   }
 
@@ -68,6 +75,33 @@
     return `${hours}:${paddedMinutes}:${paddedSeconds}`;
   }
 
+  function formatCardTime(start, end) {
+    // Create a Date object from the start timestamp
+    const startDate = new Date(start);
+    // Format the start date and time
+    const startDay = startDate.getDate().toString().padStart(2, "0");
+    const startMonth = (startDate.getMonth() + 1).toString().padStart(2, "0");
+    const startHour = startDate.getHours().toString().padStart(2, "0");
+    const startMinute = startDate.getMinutes().toString().padStart(2, "0");
+    const formattedStart = `${startDay}/${startMonth}: ${startHour}:${startMinute}`;
+
+    // Check if the end timestamp is not null
+    if (end !== null) {
+      // Create a Date object from the end timestamp
+      const endDate = new Date(end);
+      // Format the end time
+      const endHour = endDate.getHours().toString().padStart(2, "0");
+      const endMinute = endDate.getMinutes().toString().padStart(2, "0");
+      const formattedEnd = `${endHour}:${endMinute}`;
+
+      // Return the full date range string
+      return `${formattedStart} - ${formattedEnd}`;
+    } else {
+      // Return the string with "nog bezig"
+      return `${formattedStart} - nog bezig`;
+    }
+  }
+
   function startSleep() {
     const startTimestamp = serverTimestamp();
     sleepStart = new Date();
@@ -87,7 +121,31 @@
     if (currentSleepDocId) {
       updateDoc(doc(db, "entries", currentSleepDocId), {
         end: endTimestamp,
-      }).then(() => resetSleep());
+      }).then(() => {
+        lastSleepEnd = new Date();
+        resetSleep();
+        updateSleepSinceLast();
+      });
+    }
+  }
+
+  function updateFoodSinceLast() {
+    if (lastFoodStart) {
+      const interval = setInterval(() => {
+        const now = new Date();
+        foodSinceLast = formatTime(now - lastFoodStart);
+      }, 1000);
+      // onDestroy(() => clearInterval(interval));
+    }
+  }
+
+  function updateSleepSinceLast() {
+    if (lastSleepEnd) {
+      const interval = setInterval(() => {
+        const now = new Date();
+        sleepSinceLast = formatTime(now - lastSleepEnd);
+      }, 1000);
+      // onDestroy(() => clearInterval(interval));
     }
   }
 
@@ -131,6 +189,21 @@
           end: data.end ? data.end.toDate() : null,
         };
       });
+      // Initialize latest end times
+      const lastSleep = entries.find((e) => e.type === "sleep" && e.end);
+      const lastFood = entries.find((e) => e.type === "food" && e.start);
+
+      console.log(lastFood);
+      console.log(lastSleep);
+
+      if (lastSleep) {
+        lastSleepEnd = lastSleep.end;
+        updateSleepSinceLast();
+      }
+      if (lastFood) {
+        lastFoodStart = lastFood.start;
+        updateFoodSinceLast();
+      }
       // Update current activity states based on the latest entries
       updateCurrentActivities();
     });
@@ -173,6 +246,9 @@
   <h1 class="text-center mb-4">Lio's Activities Tracker</h1>
   <div class="row justify-content-center">
     <section class="col-md-6 mb-3">
+      <p class="text-muted text-center mt-2">
+        Time since last sleep: {sleepSinceLast}
+      </p>
       <button
         on:click={startSleep}
         class="btn btn-primary w-100"
@@ -188,6 +264,9 @@
       {/if}
     </section>
     <section class="col-md-6 mb-3">
+      <p class="text-muted text-center mt-2">
+        Time since last food: {foodSinceLast}
+      </p>
       <button
         on:click={startFood}
         class="btn btn-primary w-100"
@@ -226,15 +305,12 @@
             <h5 class="card-title">
               <i class="bi bi-moon-stars"></i> Sleep
             </h5>
-            <p class="card-text">Start: {entry.start.toLocaleString()}</p>
+            <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
             <p class="card-text">
               Duration: {entry.end
                 ? formatTime(entry.end - entry.start)
                 : "In progress"}
             </p>
-            {#if entry.end}
-              <p class="card-text">End: {entry.end.toLocaleString()}</p>
-            {/if}
           </div>
         </div>
       {/each}
@@ -251,13 +327,10 @@
             <h5 class="card-title">
               <i class="bi bi-cup-straw"></i> Food
             </h5>
-            <p class="card-text">Start: {entry.start.toLocaleString()}</p>
+            <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
             <p class="card-text">
-              Amount: {entry.amount ? entry.amount + " units" : "Niet ingevuld"}
+              Amount: {entry.amount ? entry.amount + " ml" : "Niet ingevuld"}
             </p>
-            {#if entry.end}
-              <p class="card-text">End: {entry.end.toLocaleString()}</p>
-            {/if}
           </div>
         </div>
       {/each}

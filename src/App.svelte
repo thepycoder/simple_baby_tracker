@@ -8,8 +8,11 @@
     query,
     orderBy,
     onSnapshot,
+    doc,
+    updateDoc,
+    limit,
   } from "firebase/firestore";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
   let foodStart,
     foodDuration = "",
@@ -18,6 +21,7 @@
   let sleepStart, currentSleepDocId;
   let entries = [];
   let isSleeping = false;
+  let clockInterval;
 
   function addFood() {
     const startTimestamp = foodStart ? new Date(foodStart) : serverTimestamp();
@@ -41,24 +45,73 @@
     }).then((docRef) => {
       currentSleepDocId = docRef.id; // Store doc id to update later
     });
+    startClock();
   }
 
   function endSleep() {
     const endTimestamp = serverTimestamp();
+    updateDoc(doc(db, "entries", currentSleepDocId), {
+      end: endTimestamp,
+    });
     isSleeping = false;
-    // Update the document with end timestamp
+    stopClock();
   }
+
+  function startClock() {
+    clearInterval(clockInterval);
+    clockInterval = setInterval(() => {
+      if (isSleeping) {
+        const now = new Date();
+        const elapsed = now - sleepStart;
+        sleepDuration = Math.floor(elapsed / 1000); // Update duration in seconds
+      }
+    }, 1000);
+  }
+
+  function stopClock() {
+    clearInterval(clockInterval);
+    sleepDuration = 0;
+  }
+
+  let sleepDuration = 0;
 
   onMount(() => {
     const q = query(collection(db, "entries"), orderBy("start", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      entries = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        start: doc.data().start.toDate(),
-      }));
+      let foundActiveSleep = false;
+      entries = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        if (data.type === "sleep" && !data.end) {
+          if (!foundActiveSleep) {
+            // Check if there's an ongoing sleep not yet ended
+            isSleeping = true;
+            foundActiveSleep = true;
+            currentSleepDocId = doc.id;
+            sleepStart = data.start.toDate();
+            startClock();
+          }
+        } else if (
+          data.type === "sleep" &&
+          data.end &&
+          doc.id === currentSleepDocId
+        ) {
+          stopClock(); // Ensure the clock stops if this document is the current sleep session
+        }
+        return {
+          id: doc.id,
+          ...data,
+          start: data.start ? data.start.toDate() : null,
+          end: data.end ? data.end.toDate() : null,
+        };
+      });
+      if (!foundActiveSleep && isSleeping) {
+        isSleeping = false; // Update state if no active sleep is found in the latest fetch
+      }
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      stopClock();
+    };
   });
 </script>
 
@@ -68,6 +121,7 @@
     <button on:click={startSleep} disabled={isSleeping}>Start Sleep</button>
     {#if isSleeping}
       <button on:click={endSleep}>End Sleep</button>
+      <p>Sleeping for {sleepDuration} seconds.</p>
     {/if}
   </div>
   <div>
@@ -91,8 +145,12 @@
     {#each entries as entry}
       <li>
         Type: {entry.type}, Start: {entry.start.toLocaleString()},
-        {#if entry.duration}Duration: {entry.duration} minutes{/if}
-        {#if entry.amount}Amount: {entry.amount}{/if}
+        {#if entry.duration}
+          Duration: {entry.duration} minutes{/if}
+        {#if entry.amount}
+          Amount: {entry.amount}{/if}
+        {#if entry.end}
+          End: {entry.end.toLocaleString()}{/if}
       </li>
     {/each}
   </ul>

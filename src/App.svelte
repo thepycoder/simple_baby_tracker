@@ -11,6 +11,7 @@
     doc,
     updateDoc,
     limit,
+    getDoc,
   } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
 
@@ -25,16 +26,14 @@
 
   function startFood() {
     const startTimestamp = serverTimestamp();
-    console.log(startTimestamp);
+    sleepStart = new Date(); // For local display
     isEating = true;
-    db.collection("entries")
-      .add({
-        start: startTimestamp,
-        type: "food",
-      })
-      .then((docRef) => {
-        currentFoodDocId = docRef.id; // Store doc id to update later
-      });
+    addDoc(collection(db, "entries"), {
+      type: "food",
+      start: startTimestamp,
+    }).then((docRef) => {
+      currentFoodDocId = docRef.id; // Store doc id to update later
+    });
   }
 
   function endFood() {
@@ -42,9 +41,15 @@
     updateDoc(doc(db, "entries", currentFoodDocId), {
       amount: foodAmount,
       end: endTimestamp,
-    });
-    isEating = false;
-    foodType = foodAmount = ""; // Reset form
+    })
+      .then(() => {
+        isEating = false;
+        foodType = "";
+        foodAmount = ""; // Reset form only after Firestore confirms the update
+      })
+      .catch((error) => {
+        console.error("Error updating document: ", error);
+      });
   }
 
   function startSleep() {
@@ -105,6 +110,7 @@
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let foundActiveSleep = false;
       let foundActiveFood = false;
+      console.log("Triggered onsnapshot!");
       entries = snapshot.docs.map((doc) => {
         const data = doc.data();
         if (data.type === "sleep" && !data.end) {
@@ -126,8 +132,6 @@
             foundActiveFood = true;
             currentFoodDocId = doc.id;
           }
-        } else if (data.end && doc.id === currentFoodDocId) {
-          //   stopClock(); // Ensure the clock stops if this document is the current sleep session
         }
         return {
           id: doc.id,

@@ -54,10 +54,11 @@
     foodAmount = "";
   }
 
-  function formatTime(seconds) {
+  function formatTime(microseconds) {
+    const seconds = microseconds / 1000;
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = Math.round(seconds % 60);
 
     // Creating a padded string for minutes and seconds for uniformity
     const paddedMinutes = String(minutes).padStart(2, "0");
@@ -105,7 +106,7 @@
     if (isSleeping) {
       const now = new Date();
       const elapsed = now - sleepStart;
-      sleepDuration = Math.floor(elapsed / 1000);
+      sleepDuration = Math.floor(elapsed);
     }
   }
 
@@ -161,6 +162,11 @@
       currentFoodDocId = activeFoodEntry.id;
     }
   }
+
+  function isLatestEntry(entry, type) {
+    const latestEntry = entries.find((e) => e.type === type && !e.end);
+    return latestEntry && latestEntry.id === entry.id;
+  }
 </script>
 
 <main class="container mt-5">
@@ -208,28 +214,54 @@
     </section>
   </div>
   <div class="row justify-content-center">
-    {#each entries as entry}
-      <div class="col-md-8 col-lg-6 mb-4">
-        <div class="card">
+    <div class="col-md-6">
+      <h3 class="text-center mb-3">Sleep Entries</h3>
+      {#each entries.filter((e) => e.type === "sleep") as entry}
+        <div
+          class={isLatestEntry(entry, "sleep")
+            ? "card mb-3 border-info"
+            : "card mb-3"}
+        >
           <div class="card-body">
             <h5 class="card-title">
-              {#if entry.type === "food"}
-                <i class="bi bi-cup-straw"></i> Food - {entry.amount}ml
-              {:else if entry.type === "sleep"}
-                <i class="bi bi-moon-stars"></i> Sleep
-              {/if}
+              <i class="bi bi-moon-stars"></i> Sleep
             </h5>
             <p class="card-text">Start: {entry.start.toLocaleString()}</p>
-            {#if entry.duration}
-              <p class="card-text">Duration: {entry.duration} minutes</p>
-            {/if}
+            <p class="card-text">
+              Duration: {entry.end
+                ? formatTime(entry.end - entry.start)
+                : "In progress"}
+            </p>
             {#if entry.end}
               <p class="card-text">End: {entry.end.toLocaleString()}</p>
             {/if}
           </div>
         </div>
-      </div>
-    {/each}
+      {/each}
+    </div>
+    <div class="col-md-6">
+      <h3 class="text-center mb-3">Food Entries</h3>
+      {#each entries.filter((e) => e.type === "food") as entry}
+        <div
+          class={isLatestEntry(entry, "food")
+            ? "card mb-3 border-warning"
+            : "card mb-3"}
+        >
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-cup-straw"></i> Food
+            </h5>
+            <p class="card-text">Start: {entry.start.toLocaleString()}</p>
+            <p class="card-text">
+              Amount: {entry.amount ? entry.amount + " units" : "Niet ingevuld"}
+            </p>
+            {#if entry.end}
+              <p class="card-text">End: {entry.end.toLocaleString()}</p>
+            {/if}
+          </div>
+        </div>
+      {/each}
+    </div>
   </div>
 </main>
 

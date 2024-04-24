@@ -163,88 +163,81 @@
   }
 </script>
 
-<main class:isEating class:isSleeping>
-  <h1>Lio's Activities Tracker</h1>
-  <section id="sleep-controls">
-    <button on:click={startSleep} disabled={isSleeping}>Start Sleep</button>
-    {#if isSleeping}
-      <button on:click={endSleep}>Stop Sleep</button>
-      <p>Lio has been sleeping for {formatTime(sleepDuration)}.</p>
-    {/if}
-  </section>
-  <section id="food-controls">
-    <button on:click={startFood} disabled={isEating}>Start Food Entry</button>
-    {#if isEating}
-      <select bind:value={foodType}>
-        <option value="">Select Food Type</option>
-        <option value="formula">Infant Formula</option>
-        <option value="solid">Solid Food</option>
-      </select>
-      <input type="number" bind:value={foodAmount} placeholder="Amount" />
-      <button on:click={endFood}>Log Food Entry</button>
-    {/if}
-  </section>
-  <div class="entry-list">
+<main class="container mt-5">
+  <h1 class="text-center mb-4">Lio's Activities Tracker</h1>
+  <div class="row justify-content-center">
+    <section class="col-md-6 mb-3">
+      <button
+        on:click={startSleep}
+        class="btn btn-primary w-100"
+        disabled={isSleeping}>Start Sleep</button
+      >
+      {#if isSleeping}
+        <button on:click={endSleep} class="btn btn-danger w-100 mt-2"
+          >Stop Sleep</button
+        >
+        <p class="text-muted text-center mt-2">
+          Lio has been sleeping for {formatTime(sleepDuration)}.
+        </p>
+      {/if}
+    </section>
+    <section class="col-md-6 mb-3">
+      <button
+        on:click={startFood}
+        class="btn btn-primary w-100"
+        disabled={isEating}>Start Food Entry</button
+      >
+      {#if isEating}
+        <div class="input-group mt-2">
+          <select bind:value={foodType} class="form-select">
+            <option value="">Select Food Type</option>
+            <option value="formula">Infant Formula</option>
+            <option value="solid">Solid Food</option>
+          </select>
+          <input
+            type="number"
+            bind:value={foodAmount}
+            class="form-control"
+            placeholder="Amount"
+          />
+        </div>
+        <button on:click={endFood} class="btn btn-success w-100 mt-2"
+          >Log Food Entry</button
+        >
+      {/if}
+    </section>
+  </div>
+  <div class="row justify-content-center">
     {#each entries as entry}
-      <div class="entry">
-        <p>Type: {entry.type}</p>
-        <p>Start: {entry.start.toLocaleString()}</p>
-        {#if entry.duration}
-          <p>Duration: {entry.duration} minutes</p>
-        {/if}
-        {#if entry.amount}
-          <p>Amount: {entry.amount}</p>
-        {/if}
-        {#if entry.end}
-          <p>End: {entry.end.toLocaleString()}</p>
-        {/if}
+      <div class="col-md-8 col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">
+              {#if entry.type === "food"}
+                <i class="bi bi-cup-straw"></i> Food - {entry.amount}ml
+              {:else if entry.type === "sleep"}
+                <i class="bi bi-moon-stars"></i> Sleep
+              {/if}
+            </h5>
+            <p class="card-text">Start: {entry.start.toLocaleString()}</p>
+            {#if entry.duration}
+              <p class="card-text">Duration: {entry.duration} minutes</p>
+            {/if}
+            {#if entry.end}
+              <p class="card-text">End: {entry.end.toLocaleString()}</p>
+            {/if}
+          </div>
+        </div>
       </div>
     {/each}
   </div>
 </main>
 
 <style>
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  section {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  input,
-  select,
-  button {
-    margin: 5px;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
-  .entry-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .entry {
-    margin-bottom: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    background: #f9f9f9;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    width: 90%;
-  }
   :global(.isSleeping) {
-    background-color: #90caf9; /* Light blue */
-    color: #0d47a1; /* Navy blue */
+    background-color: #e3f2fd; /* Light blue */
   }
   :global(.isEating) {
-    background-color: #a5d6a7; /* Light green */
-    color: #1b5e20; /* Dark green */
+    background-color: #e8f5e9; /* Light green */
   }
 </style>

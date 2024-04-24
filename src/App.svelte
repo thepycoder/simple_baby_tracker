@@ -16,7 +16,7 @@
   import { onMount, onDestroy } from "svelte";
 
   let foodType,
-    foodAmount = "",
+    foodAmount = "200",
     currentFoodDocId;
   let sleepStart, currentSleepDocId;
   let entries = [];
@@ -165,7 +165,8 @@
 
 <main>
   <h1>
-    LIO {#if isSleeping}is aan het slapen{/if}{#if isEating}is aan het eten{/if}
+    LIO {#if isSleeping}is aan het slapen{/if}
+    {#if isEating}is aan het eten{/if}
   </h1>
   <div>
     <button on:click={startSleep} disabled={isSleeping}>Start Slaapje</button>

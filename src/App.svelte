@@ -18,7 +18,8 @@
   import { authState } from "rxfire/auth";
   import { signInWithPopup, signOut } from "firebase/auth";
 
-  let foodType,
+  const db_table = "dev_entries";
+  let foodType = "formula",
     foodAmount = "200",
     currentFoodDocId;
   let sleepStart, currentSleepDocId;
@@ -42,11 +43,20 @@
     signOut();
   }
 
+  // Functionality additions and modifications:
+  function toggleFoodType(type) {
+    if (foodType === type) {
+      foodType = ""; // Toggle off if the same button is clicked again
+    } else {
+      foodType = type;
+    }
+  }
+
   // Enhanced local display functions
   function startFood() {
     const startTimestamp = serverTimestamp();
     isEating = true;
-    addDoc(collection(db, "entries"), {
+    addDoc(collection(db, db_table), {
       type: "food",
       start: startTimestamp,
       amount: 0, // Initialize with 0 amount
@@ -58,7 +68,7 @@
   function endFood() {
     const endTimestamp = serverTimestamp();
     if (currentFoodDocId) {
-      updateDoc(doc(db, "entries", currentFoodDocId), {
+      updateDoc(doc(db, db_table, currentFoodDocId), {
         amount: foodAmount,
         end: endTimestamp,
       }).then(() => {
@@ -120,7 +130,7 @@
     const startTimestamp = serverTimestamp();
     sleepStart = new Date();
     isSleeping = true;
-    addDoc(collection(db, "entries"), {
+    addDoc(collection(db, db_table), {
       type: "sleep",
       start: startTimestamp,
     }).then((docRef) => {
@@ -133,7 +143,7 @@
     const endTimestamp = serverTimestamp();
     console.log(currentSleepDocId);
     if (currentSleepDocId) {
-      updateDoc(doc(db, "entries", currentSleepDocId), {
+      updateDoc(doc(db, db_table, currentSleepDocId), {
         end: endTimestamp,
       }).then(() => {
         lastSleepEnd = new Date();
@@ -189,7 +199,7 @@
 
   onMount(() => {
     const q = query(
-      collection(db, "entries"),
+      collection(db, db_table),
       orderBy("start", "desc"),
       limit(10)
     );
@@ -223,6 +233,17 @@
     });
     return () => unsubscribe();
   });
+
+  function increaseAmount() {
+    foodAmount = (+foodAmount + 10).toString(); // Convert to number, increment, and back to string to handle binding correctly
+  }
+
+  function decreaseAmount() {
+    if (foodAmount > 10) {
+      // Ensure the amount doesn't go negative
+      foodAmount = (+foodAmount - 10).toString();
+    }
+  }
 
   function updateCurrentActivities() {
     let activeSleepEntry = entries.find(
@@ -285,25 +306,38 @@
         <button
           on:click={startFood}
           class="btn btn-primary w-100"
-          disabled={isEating}>Start Food Entry</button
+          disabled={isEating}
         >
+          Start Food Entry
+        </button>
         {#if isEating}
-          <div class="input-group mt-2">
-            <select bind:value={foodType} class="form-select">
-              <option value="">Select Food Type</option>
-              <option value="formula">Infant Formula</option>
-              <option value="solid">Solid Food</option>
-            </select>
-            <input
-              type="number"
-              bind:value={foodAmount}
-              class="form-control"
-              placeholder="Amount"
-            />
+          <div class="btn-group mt-2 w-100">
+            <button
+              on:click={() => toggleFoodType("formula")}
+              class={foodType === "formula"
+                ? "btn btn-danger"
+                : "btn btn-outline-danger"}
+            >
+              <i class="bi bi-cup-straw"></i> Infant Formula
+            </button>
+            <button
+              on:click={() => toggleFoodType("solid")}
+              class={foodType === "solid"
+                ? "btn btn-success"
+                : "btn btn-outline-success"}
+            >
+              <i class="bi bi-apple"></i> Solid Food
+            </button>
           </div>
-          <button on:click={endFood} class="btn btn-success w-100 mt-2"
-            >Log Food Entry</button
-          >
+          <input
+            type="number"
+            bind:value={foodAmount}
+            class="form-control mt-2"
+            placeholder="Amount in ml"
+          />
+          <button on:click={endFood} class="btn btn-success w-100 mt-2">
+            Log Food Entry
+          </button>
         {/if}
       </section>
     </div>
@@ -340,7 +374,16 @@
           >
             <div class="card-body">
               <h5 class="card-title">
-                <i class="bi bi-cup-straw"></i> Food
+                <i
+                  class={entry.foodType === "formula"
+                    ? "bi bi-cup-straw"
+                    : "bi bi-apple"}
+                ></i>
+                {entry.end
+                  ? entry.foodType === "formula"
+                    ? "Infant Formula"
+                    : "Solid Food"
+                  : "Nog bezig"}
               </h5>
               <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
               <p class="card-text">

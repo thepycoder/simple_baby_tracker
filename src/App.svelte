@@ -18,6 +18,7 @@
   import { authState } from "rxfire/auth";
   import { signInWithPopup, signOut } from "firebase/auth";
   import { writable } from "svelte/store";
+  import { Timestamp } from "firebase/firestore";
 
   const db_table = "dev_entries";
   let foodType = "formula";
@@ -30,8 +31,8 @@
   let clockInterval;
   let sleepDuration = 0;
   let lastFoodStart, lastSleepEnd;
-  let foodSinceLast = "N/A",
-    sleepSinceLast = "N/A";
+  let foodSinceLast = "N/A";
+  let sleepSinceLast = "N/A";
   let user = "";
 
   const unsubscribe = authState(auth).subscribe((u) => (user = u));
@@ -196,6 +197,16 @@
     sleepDuration = 0;
   }
 
+  function convertToDatetimeLocal(date) {
+    const offset = date.getTimezoneOffset() * 60000; // Convert offset to milliseconds
+    const localDate = new Date(date.getTime() - offset); // Adjust date to local time
+    return localDate.toISOString().slice(0, 16); // Convert to ISO string without 'Z'
+  }
+
+  function updateTimestamp(timestamp, timestampString) {
+    timestamp = new Date(timestampString).getTime();
+  }
+
   onMount(() => {
     const q = query(
       collection(db, db_table),
@@ -209,7 +220,9 @@
           id: doc.id,
           ...data,
           start: data.start.toDate(),
+          edit_start: convertToDatetimeLocal(data.start.toDate()),
           end: data.end ? data.end.toDate() : null,
+          edit_end: data.end ? convertToDatetimeLocal(data.end.toDate()) : null,
         };
       });
       // Initialize latest end times
@@ -252,11 +265,11 @@
   }
 
   async function saveEdit(entry) {
+    console.log("Saving: " + entry);
+    console.log(entry);
     await updateDoc(doc(db, db_table, entry.id), {
-      subtype: entry.subtype,
-      amount: entry.amount,
-      start: entry.start,
-      end: entry.end,
+      start: Timestamp.fromDate(entry.start),
+      end: Timestamp.fromDate(entry.end),
     });
     editState.update((state) => ({ ...state, [entry.id]: false }));
   }
@@ -299,7 +312,7 @@
     <div class="row justify-content-center">
       <section class="col-md-6 mb-3">
         <p class="text-muted text-center mt-2">
-          Time since last sleep: {sleepSinceLast}
+          Time since last sleep: <b class="fs-2">{sleepSinceLast}</b>
         </p>
         <button
           on:click={startSleep}
@@ -317,7 +330,7 @@
       </section>
       <section class="col-md-6 mb-3">
         <p class="text-muted text-center mt-2">
-          Time since last food: {foodSinceLast}
+          Time since last food: <b class="fs-2">{foodSinceLast}</b>
         </p>
         <button
           on:click={startFood}
@@ -371,7 +384,7 @@
     </div>
     <div class="row justify-content-center">
       <div class="col-md-6">
-        <h3 class="text-center mb-3">Sleep Entries</h3>
+        <!-- <h3 class="text-center mb-3">Sleep Entries</h3> -->
         {#each entries.filter((e) => e.type === "sleep") as entry}
           <div
             class={isLatestEntry(entry, "sleep")
@@ -383,12 +396,14 @@
                 <input
                   type="datetime-local"
                   class="form-control mb-2"
-                  bind:value={entry.start}
+                  bind:value={entry.edit_start}
+                  on:input={() => (entry.start = new Date(entry.edit_start))}
                 />
                 <input
                   type="datetime-local"
                   class="form-control mb-2"
-                  bind:value={entry.end}
+                  bind:value={entry.edit_end}
+                  on:input={() => (entry.end = new Date(entry.edit_end))}
                 />
                 <button class="btn btn-primary" on:click={() => saveEdit(entry)}
                   >Save</button
@@ -425,41 +440,92 @@
         {/each}
       </div>
       <div class="col-md-6">
-        <h3 class="text-center mb-3">Food Entries</h3>
+        <!-- <h3 class="text-center mb-3">Food Entries</h3> -->
         {#each entries.filter((e) => e.type === "food") as entry}
           <div
             class={isLatestEntry(entry, "food")
               ? "card mb-3 text-bg-success"
               : "card mb-3"}
           >
-            <div class="card-body position-relative">
-              <!-- Edit button with icon -->
-              <button
-                on:click={() => enableEdit(entry.id)}
-                class="btn btn-light position-absolute top-0 end-0 m-2"
-              >
-                <i class="bi bi-pencil-square"></i>
-              </button>
+            {#if $editState[entry.id]}
+              <div class="card-body">
+                <input
+                  type="datetime-local"
+                  class="form-control mb-2"
+                  bind:value={entry.edit_start}
+                  on:input={() => (entry.start = new Date(entry.edit_start))}
+                />
+                <input
+                  type="datetime-local"
+                  class="form-control mb-2"
+                  bind:value={entry.edit_end}
+                  on:input={() => (entry.end = new Date(entry.edit_end))}
+                />
+                <div class="btn-group mt-2 w-100 mb-2">
+                  <button
+                    on:click={() => (entry.subtype = "formula")}
+                    class={entry.subtype === "formula"
+                      ? "btn btn-light"
+                      : "btn btn-outline-light"}
+                  >
+                    <i class="bi bi-cup-straw"></i> Infant Formula
+                  </button>
+                  <button
+                    on:click={() => (entry.subtype = "solid")}
+                    class={entry.subtype === "solid"
+                      ? "btn btn-light"
+                      : "btn btn-outline-light"}
+                  >
+                    <i class="bi bi-apple"></i> Solid Food
+                  </button>
+                </div>
+                <input
+                  type="number"
+                  bind:value={entry.amount}
+                  class="form-control mb-2"
+                  placeholder="Hoeveel?"
+                />
+                <button class="btn btn-primary" on:click={() => saveEdit(entry)}
+                  >Save</button
+                >
+                <button
+                  class="btn btn-secondary"
+                  on:click={() => cancelEdit(entry.id)}>Cancel</button
+                >
+              </div>
+            {:else}
+              <div class="card-body position-relative">
+                <!-- Edit button with icon -->
+                <button
+                  on:click={() => enableEdit(entry.id)}
+                  class="btn btn-light position-absolute top-0 end-0 m-2"
+                >
+                  <i class="bi bi-pencil-square"></i>
+                </button>
 
-              <h5 class="card-title">
-                <i
-                  class={entry.subtype === "formula"
-                    ? "bi bi-cup-straw"
-                    : "bi bi-apple"}
-                ></i>
-                {entry.end
-                  ? entry.subtype === "formula"
-                    ? "Infant Formula"
-                    : "Solid Food"
-                  : "Nog bezig"}
-              </h5>
-              <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
-              <p class="card-text">
-                Amount: {entry.amount
-                  ? entry.amount + (entry.subtype === "formula" ? " ml" : " gr")
-                  : "Niet ingevuld"}
-              </p>
-            </div>
+                <h5 class="card-title">
+                  <i
+                    class={entry.subtype === "formula"
+                      ? "bi bi-cup-straw"
+                      : "bi bi-apple"}
+                  ></i>
+                  {entry.end
+                    ? entry.subtype === "formula"
+                      ? "Infant Formula"
+                      : "Solid Food"
+                    : "Nog bezig"}
+                </h5>
+                <p class="card-text">
+                  {formatCardTime(entry.start, entry.end)}
+                </p>
+                <p class="card-text">
+                  Amount: {entry.amount
+                    ? entry.amount +
+                      (entry.subtype === "formula" ? " ml" : " gr")
+                    : "Niet ingevuld"}
+                </p>
+              </div>
+            {/if}
           </div>
         {/each}
       </div>

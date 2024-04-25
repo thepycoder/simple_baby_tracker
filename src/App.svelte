@@ -14,6 +14,9 @@
     getDoc,
   } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
+  import { auth, googleProvider } from "./firebase";
+  import { authState } from "rxfire/auth";
+  import { signInWithPopup, signOut } from "firebase/auth";
 
   let foodType,
     foodAmount = "200",
@@ -27,6 +30,17 @@
   let lastFoodStart, lastSleepEnd;
   let foodSinceLast = "N/A",
     sleepSinceLast = "N/A";
+  let user = "";
+
+  const unsubscribe = authState(auth).subscribe((u) => (user = u));
+
+  function login() {
+    signInWithPopup(auth, googleProvider);
+  }
+
+  function logout() {
+    signOut();
+  }
 
   // Enhanced local display functions
   function startFood() {
@@ -243,99 +257,108 @@
 </script>
 
 <main class="container mt-5">
-  <h1 class="text-center mb-4">Lio's Activities Tracker</h1>
-  <div class="row justify-content-center">
-    <section class="col-md-6 mb-3">
-      <p class="text-muted text-center mt-2">
-        Time since last sleep: {sleepSinceLast}
-      </p>
-      <button
-        on:click={startSleep}
-        class="btn btn-primary w-100"
-        disabled={isSleeping}>Start Sleep</button
-      >
-      {#if isSleeping}
-        <button on:click={endSleep} class="btn btn-danger w-100 mt-2"
-          >Stop Sleep</button
-        >
+  {#if user}
+    <h1 class="text-center mb-4">Lio's Activities Tracker</h1>
+    <div class="row justify-content-center">
+      <section class="col-md-6 mb-3">
         <p class="text-muted text-center mt-2">
-          Lio has been sleeping for {formatTime(sleepDuration)}.
+          Time since last sleep: {sleepSinceLast}
         </p>
-      {/if}
-    </section>
-    <section class="col-md-6 mb-3">
-      <p class="text-muted text-center mt-2">
-        Time since last food: {foodSinceLast}
-      </p>
-      <button
-        on:click={startFood}
-        class="btn btn-primary w-100"
-        disabled={isEating}>Start Food Entry</button
+        <button
+          on:click={startSleep}
+          class="btn btn-primary w-100"
+          disabled={isSleeping}>Start Sleep</button
+        >
+        {#if isSleeping}
+          <button on:click={endSleep} class="btn btn-danger w-100 mt-2"
+            >Stop Sleep</button
+          >
+          <p class="text-muted text-center mt-2">
+            Lio has been sleeping for {formatTime(sleepDuration)}.
+          </p>
+        {/if}
+      </section>
+      <section class="col-md-6 mb-3">
+        <p class="text-muted text-center mt-2">
+          Time since last food: {foodSinceLast}
+        </p>
+        <button
+          on:click={startFood}
+          class="btn btn-primary w-100"
+          disabled={isEating}>Start Food Entry</button
+        >
+        {#if isEating}
+          <div class="input-group mt-2">
+            <select bind:value={foodType} class="form-select">
+              <option value="">Select Food Type</option>
+              <option value="formula">Infant Formula</option>
+              <option value="solid">Solid Food</option>
+            </select>
+            <input
+              type="number"
+              bind:value={foodAmount}
+              class="form-control"
+              placeholder="Amount"
+            />
+          </div>
+          <button on:click={endFood} class="btn btn-success w-100 mt-2"
+            >Log Food Entry</button
+          >
+        {/if}
+      </section>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h3 class="text-center mb-3">Sleep Entries</h3>
+        {#each entries.filter((e) => e.type === "sleep") as entry}
+          <div
+            class={isLatestEntry(entry, "sleep")
+              ? "card mb-3 border-info"
+              : "card mb-3"}
+          >
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="bi bi-moon-stars"></i> Sleep
+              </h5>
+              <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
+              <p class="card-text">
+                Duration: {entry.end
+                  ? formatTime(entry.end - entry.start)
+                  : "In progress"}
+              </p>
+            </div>
+          </div>
+        {/each}
+      </div>
+      <div class="col-md-6">
+        <h3 class="text-center mb-3">Food Entries</h3>
+        {#each entries.filter((e) => e.type === "food") as entry}
+          <div
+            class={isLatestEntry(entry, "food")
+              ? "card mb-3 border-warning"
+              : "card mb-3"}
+          >
+            <div class="card-body">
+              <h5 class="card-title">
+                <i class="bi bi-cup-straw"></i> Food
+              </h5>
+              <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
+              <p class="card-text">
+                Amount: {entry.amount ? entry.amount + " ml" : "Niet ingevuld"}
+              </p>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  {:else}
+    <div class="headerBar">
+      <h1 class="header top">Victor's baby tracker!</h1>
+      <button on:click={login} class="btn btn-primary"
+        >Sign in with google</button
       >
-      {#if isEating}
-        <div class="input-group mt-2">
-          <select bind:value={foodType} class="form-select">
-            <option value="">Select Food Type</option>
-            <option value="formula">Infant Formula</option>
-            <option value="solid">Solid Food</option>
-          </select>
-          <input
-            type="number"
-            bind:value={foodAmount}
-            class="form-control"
-            placeholder="Amount"
-          />
-        </div>
-        <button on:click={endFood} class="btn btn-success w-100 mt-2"
-          >Log Food Entry</button
-        >
-      {/if}
-    </section>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <h3 class="text-center mb-3">Sleep Entries</h3>
-      {#each entries.filter((e) => e.type === "sleep") as entry}
-        <div
-          class={isLatestEntry(entry, "sleep")
-            ? "card mb-3 border-info"
-            : "card mb-3"}
-        >
-          <div class="card-body">
-            <h5 class="card-title">
-              <i class="bi bi-moon-stars"></i> Sleep
-            </h5>
-            <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
-            <p class="card-text">
-              Duration: {entry.end
-                ? formatTime(entry.end - entry.start)
-                : "In progress"}
-            </p>
-          </div>
-        </div>
-      {/each}
     </div>
-    <div class="col-md-6">
-      <h3 class="text-center mb-3">Food Entries</h3>
-      {#each entries.filter((e) => e.type === "food") as entry}
-        <div
-          class={isLatestEntry(entry, "food")
-            ? "card mb-3 border-warning"
-            : "card mb-3"}
-        >
-          <div class="card-body">
-            <h5 class="card-title">
-              <i class="bi bi-cup-straw"></i> Food
-            </h5>
-            <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
-            <p class="card-text">
-              Amount: {entry.amount ? entry.amount + " ml" : "Niet ingevuld"}
-            </p>
-          </div>
-        </div>
-      {/each}
-    </div>
-  </div>
+  {/if}
 </main>
 
 <style>

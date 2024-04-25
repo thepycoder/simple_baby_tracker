@@ -17,6 +17,7 @@
   import { auth, googleProvider } from "./firebase";
   import { authState } from "rxfire/auth";
   import { signInWithPopup, signOut } from "firebase/auth";
+  import { writable } from "svelte/store";
 
   const db_table = "dev_entries";
   let foodType = "formula";
@@ -240,6 +241,26 @@
     }
   }
 
+  let editState = writable({});
+
+  function enableEdit(entryId) {
+    editState.update((state) => ({ ...state, [entryId]: true }));
+  }
+
+  function cancelEdit(entryId) {
+    editState.update((state) => ({ ...state, [entryId]: false }));
+  }
+
+  async function saveEdit(entry) {
+    await updateDoc(doc(db, db_table, entry.id), {
+      subtype: entry.subtype,
+      amount: entry.amount,
+      start: entry.start,
+      end: entry.end,
+    });
+    editState.update((state) => ({ ...state, [entry.id]: false }));
+  }
+
   function updateCurrentActivities() {
     let activeSleepEntry = entries.find(
       (entry) => entry.type === "sleep" && !entry.end
@@ -267,7 +288,7 @@
   }
 
   function isLatestEntry(entry, type) {
-    const latestEntry = entries.find((e) => e.type === type && !e.end);
+    const latestEntry = entries.find((e) => e.type === type);
     return latestEntry && latestEntry.id === entry.id;
   }
 </script>
@@ -354,20 +375,52 @@
         {#each entries.filter((e) => e.type === "sleep") as entry}
           <div
             class={isLatestEntry(entry, "sleep")
-              ? "card mb-3 border-info"
+              ? "card mb-3 text-bg-success"
               : "card mb-3"}
           >
-            <div class="card-body">
-              <h5 class="card-title">
-                <i class="bi bi-moon-stars"></i> Sleep
-              </h5>
-              <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
-              <p class="card-text">
-                Duration: {entry.end
-                  ? formatTime(entry.end - entry.start)
-                  : "In progress"}
-              </p>
-            </div>
+            {#if $editState[entry.id]}
+              <div class="card-body">
+                <input
+                  type="datetime-local"
+                  class="form-control mb-2"
+                  bind:value={entry.start}
+                />
+                <input
+                  type="datetime-local"
+                  class="form-control mb-2"
+                  bind:value={entry.end}
+                />
+                <button class="btn btn-primary" on:click={() => saveEdit(entry)}
+                  >Save</button
+                >
+                <button
+                  class="btn btn-secondary"
+                  on:click={() => cancelEdit(entry.id)}>Cancel</button
+                >
+              </div>
+            {:else}
+              <div class="card-body position-relative">
+                <!-- Edit button with icon -->
+                <button
+                  on:click={() => enableEdit(entry.id)}
+                  class="btn btn-light position-absolute top-0 end-0 m-2"
+                >
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+
+                <h5 class="card-title">
+                  <i class="bi bi-moon-stars"></i> Sleep
+                </h5>
+                <p class="card-text">
+                  {formatCardTime(entry.start, entry.end)}
+                </p>
+                <p class="card-text">
+                  Duration: {entry.end
+                    ? formatTime(entry.end - entry.start)
+                    : "In progress"}
+                </p>
+              </div>
+            {/if}
           </div>
         {/each}
       </div>
@@ -376,10 +429,18 @@
         {#each entries.filter((e) => e.type === "food") as entry}
           <div
             class={isLatestEntry(entry, "food")
-              ? "card mb-3 border-warning"
+              ? "card mb-3 text-bg-success"
               : "card mb-3"}
           >
-            <div class="card-body">
+            <div class="card-body position-relative">
+              <!-- Edit button with icon -->
+              <button
+                on:click={() => enableEdit(entry.id)}
+                class="btn btn-light position-absolute top-0 end-0 m-2"
+              >
+                <i class="bi bi-pencil-square"></i>
+              </button>
+
               <h5 class="card-title">
                 <i
                   class={entry.subtype === "formula"
@@ -394,7 +455,9 @@
               </h5>
               <p class="card-text">{formatCardTime(entry.start, entry.end)}</p>
               <p class="card-text">
-                Amount: {entry.amount ? entry.amount + " ml" : "Niet ingevuld"}
+                Amount: {entry.amount
+                  ? entry.amount + (entry.subtype === "formula" ? " ml" : " gr")
+                  : "Niet ingevuld"}
               </p>
             </div>
           </div>

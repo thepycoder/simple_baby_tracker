@@ -435,11 +435,11 @@
                   on:input={() => (entry.end = new Date(entry.edit_end))}
                 />
                 <button
-                  class="btn btn-primary"
+                  class="btn btn-light"
                   on:click={() => saveEditSleep(entry)}>Save</button
                 >
                 <button
-                  class="btn btn-secondary"
+                  class="btn btn-outline-light"
                   on:click={() => cancelEdit(entry.id)}>Cancel</button
                 >
               </div>
@@ -511,11 +511,11 @@
                   placeholder="Hoeveel?"
                 />
                 <button
-                  class="btn btn-primary"
+                  class="btn btn-light"
                   on:click={() => saveEditFood(entry)}>Save</button
                 >
                 <button
-                  class="btn btn-secondary"
+                  class="btn btn-outline-light"
                   on:click={() => cancelEdit(entry.id)}>Cancel</button
                 >
               </div>
@@ -579,7 +579,7 @@
                   on:click={() => saveEditSleep(entry)}>Save</button
                 >
                 <button
-                  class="btn btn-secondary"
+                  class="btn btn-outline-primary"
                   on:click={() => cancelEdit(entry.id)}>Cancel</button
                 >
               </div>
@@ -655,7 +655,7 @@
                   on:click={() => saveEditFood(entry)}>Save</button
                 >
                 <button
-                  class="btn btn-secondary"
+                  class="btn btn-outline-primary"
                   on:click={() => cancelEdit(entry.id)}>Cancel</button
                 >
               </div>

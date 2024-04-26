@@ -23,13 +23,14 @@
   const db_table = "dev_entries";
   let foodType = "formula";
   let foodAmount = "200";
-  let currentFoodDocId;
-  let sleepStart, currentSleepDocId;
+  let sleepStart, currentSleepDocId, foodStart, currentFoodDocId;
   let entries = [];
   let isSleeping = false;
   let isEating = false;
-  let clockInterval;
+  let clockSleepInterval;
+  let clockFoodInterval;
   let sleepDuration = 0;
+  let eatDuration = 0;
   let lastFoodStart, lastSleepEnd;
   let foodSinceLast = "N/A";
   let sleepSinceLast = "N/A";
@@ -54,6 +55,7 @@
   // Enhanced local display functions
   function startFood() {
     const startTimestamp = serverTimestamp();
+    foodStart = new Date();
     isEating = true;
     addDoc(collection(db, db_table), {
       type: "food",
@@ -62,7 +64,7 @@
       amount: foodAmount,
     }).then((docRef) => {
       currentFoodDocId = docRef.id;
-      console.log("Added food " + foodType + startTimestamp + foodAmount);
+      startFoodClock();
     });
   }
 
@@ -78,12 +80,6 @@
         updateFoodSinceLast();
       });
     }
-  }
-
-  function resetFood() {
-    isEating = false;
-    foodType = "formula";
-    foodAmount = "200";
   }
 
   function formatTime(microseconds) {
@@ -136,7 +132,7 @@
       start: startTimestamp,
     }).then((docRef) => {
       currentSleepDocId = docRef.id;
-      startClock();
+      startSleepClock();
     });
   }
 
@@ -175,13 +171,12 @@
 
   function resetSleep() {
     isSleeping = false;
-    stopClock();
+    stopSleepClock();
   }
 
-  // Clock logic remains similar
-  function startClock() {
-    clearInterval(clockInterval);
-    clockInterval = setInterval(updateSleepDuration, 1000);
+  function startSleepClock() {
+    clearInterval(clockSleepInterval);
+    clockSleepInterval = setInterval(updateSleepDuration, 1000);
   }
 
   function updateSleepDuration() {
@@ -192,8 +187,33 @@
     }
   }
 
-  function stopClock() {
-    clearInterval(clockInterval);
+  function stopFoodClock() {
+    clearInterval(clockFoodInterval);
+    sleepDuration = 0;
+  }
+
+  function resetFood() {
+    isEating = false;
+    foodType = "formula";
+    foodAmount = "200";
+    stopFoodClock();
+  }
+
+  function startFoodClock() {
+    clearInterval(clockFoodInterval);
+    clockFoodInterval = setInterval(updateFoodDuration, 1000);
+  }
+
+  function updateFoodDuration() {
+    if (isEating) {
+      const now = new Date();
+      const elapsed = now - foodStart;
+      eatDuration = Math.floor(elapsed);
+    }
+  }
+
+  function stopSleepClock() {
+    clearInterval(clockFoodInterval);
     sleepDuration = 0;
   }
 
@@ -295,11 +315,11 @@
       sleepStart = activeSleepEntry.start;
       if (!isSleeping) {
         isSleeping = true;
-        startClock();
+        startSleepClock();
       }
     } else if (isSleeping) {
       isSleeping = false;
-      stopClock();
+      stopSleepClock();
     }
 
     isEating = !!activeFoodEntry;
@@ -316,38 +336,36 @@
 
 <main class="container mt-5">
   {#if user}
-    <h1 class="text-center mb-4">Lio's Activities Tracker</h1>
+    <!-- <h1 class="text-center mb-4">Lio's Activities Tracker</h1> -->
     <div class="row justify-content-center">
       <!-- Sleep input -->
       <section class="col-md-6 mb-3">
-        <p class="text-muted text-center mt-2">
-          Time since last sleep: <b class="fs-2">{sleepSinceLast}</b>
-        </p>
-        <button
-          on:click={startSleep}
-          class="btn btn-primary w-100"
-          disabled={isSleeping}>Start Sleep</button
-        >
         {#if isSleeping}
+          <p class="text-muted text-center mt-2">
+            Tijd sinds start slaapje: <b class="fs-2"
+              >{formatTime(sleepDuration)}</b
+            >
+          </p>
           <button on:click={endSleep} class="btn btn-danger w-100 mt-2"
             >Stop Sleep</button
           >
+        {:else}
           <p class="text-muted text-center mt-2">
-            Lio has been sleeping for {formatTime(sleepDuration)}.
+            Tijd sinds laatste slaapje: <b class="fs-2">{sleepSinceLast}</b>
           </p>
+          <button
+            on:click={startSleep}
+            class="btn btn-primary w-100 mt-2"
+            disabled={isSleeping}>Start Sleep</button
+          >
         {/if}
       </section>
       <!-- Food input -->
       <section class="col-md-6 mb-3">
-        <p class="text-muted text-center mt-2">
-          Time since last food: <b class="fs-2">{foodSinceLast}</b>
-        </p>
-        <button
-          on:click={startFood}
-          class="btn btn-primary w-100"
-          disabled={isEating}>Start Food Entry</button
-        >
         {#if isEating}
+          <p class="text-muted text-center mt-2">
+            Aan het eten voor: <b class="fs-2">{formatTime(eatDuration)}</b>
+          </p>
           <div class="btn-group mt-2 w-100">
             <button
               on:click={() => toggleFoodType("formula")}
@@ -384,6 +402,15 @@
           </div>
           <button on:click={endFood} class="btn btn-success w-100 mt-2"
             >Log Food Entry</button
+          >
+        {:else}
+          <p class="text-muted text-center mt-2">
+            Time since last food: <b class="fs-2">{foodSinceLast}</b>
+          </p>
+          <button
+            on:click={startFood}
+            class="btn btn-primary w-100 mt-2"
+            disabled={isEating}>Start Food Entry</button
           >
         {/if}
       </section>

@@ -310,6 +310,7 @@
   {#if user}
     <h1 class="text-center mb-4">Lio's Activities Tracker</h1>
     <div class="row justify-content-center">
+      <!-- Sleep input -->
       <section class="col-md-6 mb-3">
         <p class="text-muted text-center mt-2">
           Time since last sleep: <b class="fs-2">{sleepSinceLast}</b>
@@ -328,6 +329,7 @@
           </p>
         {/if}
       </section>
+      <!-- Food input -->
       <section class="col-md-6 mb-3">
         <p class="text-muted text-center mt-2">
           Time since last food: <b class="fs-2">{foodSinceLast}</b>
@@ -383,8 +385,8 @@
       </section>
     </div>
     <div class="row justify-content-center">
+      <!-- Sleep entries -->
       <div class="col-md-6">
-        <!-- <h3 class="text-center mb-3">Sleep Entries</h3> -->
         {#each entries.filter((e) => e.type === "sleep") as entry}
           <div
             class={isLatestEntry(entry, "sleep")
@@ -439,8 +441,8 @@
           </div>
         {/each}
       </div>
+      <!-- Food entries -->
       <div class="col-md-6">
-        <!-- <h3 class="text-center mb-3">Food Entries</h3> -->
         {#each entries.filter((e) => e.type === "food") as entry}
           <div
             class={isLatestEntry(entry, "food")

@@ -12,6 +12,7 @@
     updateDoc,
     limit,
     getDoc,
+    deleteDoc,
   } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
   import { auth, googleProvider } from "./firebase";
@@ -19,6 +20,7 @@
   import { signInWithPopup, signOut } from "firebase/auth";
   import { writable } from "svelte/store";
   import { Timestamp } from "firebase/firestore";
+  import ConfirmModal from "./ConfirmModal.svelte";
 
   const db_table = "dev_entries";
   let foodType = "formula";
@@ -328,13 +330,43 @@
     }
   }
 
-  function isLatestEntry(entry, type) {
-    const latestEntry = entries.find((e) => e.type === type);
-    return latestEntry && latestEntry.id === entry.id;
+  async function removeEntry(entryId) {
+    try {
+      await deleteDoc(doc(db, db_table, entryId));
+      // Optionally add some UI feedback here, e.g., a toast notification
+    } catch (error) {
+      console.error("Error removing document: ", error);
+      // Handle errors, e.g., show an error message to the user
+    }
+  }
+
+  let showModal = false;
+  let entryIdToDelete = null;
+
+  function requestDelete(entryId) {
+    entryIdToDelete = entryId;
+    showModal = true;
+  }
+
+  function handleConfirm() {
+    removeEntry(entryIdToDelete);
+    showModal = false;
+    entryIdToDelete = null;
+  }
+
+  function handleCancel() {
+    showModal = false;
+    entryIdToDelete = null;
   }
 </script>
 
 <main class="container mt-5">
+  <ConfirmModal
+    show={showModal}
+    message="Are you sure you want to delete this entry?"
+    on:confirm={handleConfirm}
+    on:cancel={handleCancel}
+  />
   {#if user}
     <!-- <h1 class="text-center mb-4">Lio's Activities Tracker</h1> -->
     <div class="row justify-content-center">
@@ -445,13 +477,22 @@
               </div>
             {:else}
               <div class="card-body position-relative">
-                <!-- Edit button with icon -->
-                <button
-                  on:click={() => enableEdit(entry.id)}
-                  class="btn btn-light position-absolute top-0 end-0 m-2"
-                >
-                  <i class="bi bi-pencil-square"></i>
-                </button>
+                <div class="position-absolute top-0 end-0 m-2">
+                  <!-- Edit button with icon -->
+                  <button
+                    on:click={() => enableEdit(entry.id)}
+                    class="btn btn-light"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button
+                    on:click={() => requestDelete(entry.id)}
+                    class="btn btn-danger"
+                    style="right: 40px;"
+                  >
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
                 <h5 class="card-title">
                   <i class="bi bi-moon-stars"></i> Sleep
                 </h5>
@@ -521,13 +562,22 @@
               </div>
             {:else}
               <div class="card-body position-relative">
-                <!-- Edit button with icon -->
-                <button
-                  on:click={() => enableEdit(entry.id)}
-                  class="btn btn-light position-absolute top-0 end-0 m-2"
-                >
-                  <i class="bi bi-pencil-square"></i>
-                </button>
+                <div class="position-absolute top-0 end-0 m-2">
+                  <!-- Edit button with icon -->
+                  <button
+                    on:click={() => enableEdit(entry.id)}
+                    class="btn btn-light"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button
+                    on:click={() => requestDelete(entry.id)}
+                    class="btn btn-danger"
+                    style="right: 40px;"
+                  >
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
                 <h5 class="card-title">
                   <i
                     class={entry.subtype === "formula"
@@ -585,13 +635,22 @@
               </div>
             {:else}
               <div class="card-body position-relative">
-                <!-- Edit button with icon -->
-                <button
-                  on:click={() => enableEdit(entry.id)}
-                  class="btn btn-light position-absolute top-0 end-0 m-2"
-                >
-                  <i class="bi bi-pencil-square"></i>
-                </button>
+                <div class="position-absolute top-0 end-0 m-2">
+                  <!-- Edit button with icon -->
+                  <button
+                    on:click={() => enableEdit(entry.id)}
+                    class="btn btn-light"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button
+                    on:click={() => requestDelete(entry.id)}
+                    class="btn btn-danger"
+                    style="right: 40px;"
+                  >
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
                 <h5 class="card-title">
                   <i class="bi bi-moon-stars"></i> Sleep
                 </h5>
@@ -661,13 +720,22 @@
               </div>
             {:else}
               <div class="card-body position-relative">
-                <!-- Edit button with icon -->
-                <button
-                  on:click={() => enableEdit(entry.id)}
-                  class="btn btn-light position-absolute top-0 end-0 m-2"
-                >
-                  <i class="bi bi-pencil-square"></i>
-                </button>
+                <div class="position-absolute top-0 end-0 m-2">
+                  <!-- Edit button with icon -->
+                  <button
+                    on:click={() => enableEdit(entry.id)}
+                    class="btn btn-light"
+                  >
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button
+                    on:click={() => requestDelete(entry.id)}
+                    class="btn btn-danger"
+                    style="right: 40px;"
+                  >
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </div>
                 <h5 class="card-title">
                   <i
                     class={entry.subtype === "formula"

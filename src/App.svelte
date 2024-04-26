@@ -264,12 +264,20 @@
     editState.update((state) => ({ ...state, [entryId]: false }));
   }
 
-  async function saveEdit(entry) {
-    console.log("Saving: " + entry);
-    console.log(entry);
+  async function saveEditSleep(entry) {
     await updateDoc(doc(db, db_table, entry.id), {
       start: Timestamp.fromDate(entry.start),
       end: Timestamp.fromDate(entry.end),
+    });
+    editState.update((state) => ({ ...state, [entry.id]: false }));
+  }
+
+  async function saveEditFood(entry) {
+    await updateDoc(doc(db, db_table, entry.id), {
+      start: Timestamp.fromDate(entry.start),
+      end: Timestamp.fromDate(entry.end),
+      subtype: entry.subtype,
+      amount: entry.amount,
     });
     editState.update((state) => ({ ...state, [entry.id]: false }));
   }
@@ -407,8 +415,9 @@
                   bind:value={entry.edit_end}
                   on:input={() => (entry.end = new Date(entry.edit_end))}
                 />
-                <button class="btn btn-primary" on:click={() => saveEdit(entry)}
-                  >Save</button
+                <button
+                  class="btn btn-primary"
+                  on:click={() => saveEditSleep(entry)}>Save</button
                 >
                 <button
                   class="btn btn-secondary"
@@ -487,8 +496,9 @@
                   class="form-control mb-2"
                   placeholder="Hoeveel?"
                 />
-                <button class="btn btn-primary" on:click={() => saveEdit(entry)}
-                  >Save</button
+                <button
+                  class="btn btn-primary"
+                  on:click={() => saveEditFood(entry)}>Save</button
                 >
                 <button
                   class="btn btn-secondary"

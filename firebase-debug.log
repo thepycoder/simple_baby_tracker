@@ -1,0 +1,22 @@
+[debug] [2024-04-26T05:07:15.102Z] ----------------------------------------------------------------------
+[debug] [2024-04-26T05:07:15.105Z] Command:       /usr/bin/node /usr/bin/firebase deploy
+[debug] [2024-04-26T05:07:15.106Z] CLI Version:   13.0.3
+[debug] [2024-04-26T05:07:15.106Z] Platform:      linux
+[debug] [2024-04-26T05:07:15.106Z] Node Version:  v21.6.2
+[debug] [2024-04-26T05:07:15.106Z] Time:          Fri Apr 26 2024 07:07:15 GMT+0200 (Central European Summer Time)
+[debug] [2024-04-26T05:07:15.106Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-04-26T05:07:15.109Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2024-04-26T05:07:15.179Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-04-26T05:07:15.179Z] > authorizing via signed-in user (victor@projectwhy.be)
+[debug] [2024-04-26T05:07:15.179Z] [iam] checking project babytracker-b2323 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2024-04-26T05:07:15.180Z] > refreshing access token with scopes: []
+[debug] [2024-04-26T05:07:15.181Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2024-04-26T05:07:15.181Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-04-26T05:07:15.437Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2024-04-26T05:07:15.437Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2024-04-26T05:07:15.444Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/babytracker-b2323:testIamPermissions [none]
+[debug] [2024-04-26T05:07:15.444Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/babytracker-b2323:testIamPermissions x-goog-quota-user=projects/babytracker-b2323
+[debug] [2024-04-26T05:07:15.444Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/babytracker-b2323:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2024-04-26T05:07:15.533Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2024-04-26T05:07:15.533Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}

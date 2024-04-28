@@ -447,7 +447,7 @@
                   </button>
                   <button
                     on:click={() => requestDelete(entry.id)}
-                    class="btn btn-danger"
+                    class="btn btn-light"
                     style="right: 40px;"
                   >
                     <i class="bi bi-trash-fill"></i>
@@ -532,7 +532,7 @@
                   </button>
                   <button
                     on:click={() => requestDelete(entry.id)}
-                    class="btn btn-danger"
+                    class="btn btn-light"
                     style="right: 40px;"
                   >
                     <i class="bi bi-trash-fill"></i>
@@ -605,7 +605,7 @@
                   </button>
                   <button
                     on:click={() => requestDelete(entry.id)}
-                    class="btn btn-danger"
+                    class="btn btn-light"
                     style="right: 40px;"
                   >
                     <i class="bi bi-trash-fill"></i>
@@ -690,7 +690,7 @@
                   </button>
                   <button
                     on:click={() => requestDelete(entry.id)}
-                    class="btn btn-danger"
+                    class="btn btn-light"
                     style="right: 40px;"
                   >
                     <i class="bi bi-trash-fill"></i>

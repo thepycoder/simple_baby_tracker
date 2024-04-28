@@ -1,4 +1,4 @@
-function formatTime(microseconds) {
+export function formatTime(microseconds) {
   const seconds = microseconds / 1000;
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -12,7 +12,7 @@ function formatTime(microseconds) {
   return `${hours}:${paddedMinutes}:${paddedSeconds}`;
 }
 
-function formatCardTime(start, end) {
+export function formatCardTime(start, end) {
   // Create a Date object from the start timestamp
   const startDate = new Date(start);
   // Format the start date and time

@@ -2,6 +2,8 @@
   import { formatTime, formatCardTime } from "./utils";
   import { editState } from "./stores";
   import { enableEdit, cancelEdit } from "./editUtils";
+  import { updateDoc } from "firebase/firestore";
+
   export let entry;
   export let latest;
   export let onDelete;

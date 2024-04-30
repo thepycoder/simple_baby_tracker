@@ -38,3 +38,9 @@ export function formatCardTime(start, end) {
     return `${formattedStart} - nog bezig`;
   }
 }
+
+export function convertToDatetimeLocal(date) {
+  const offset = date.getTimezoneOffset() * 60000; // Convert offset to milliseconds
+  const localDate = new Date(date.getTime() - offset); // Adjust date to local time
+  return localDate.toISOString().slice(0, 16); // Convert to ISO string without 'Z'
+}

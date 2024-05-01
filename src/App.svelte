@@ -151,12 +151,14 @@
     <div class="row justify-content-center">
       <!-- All Sleep entries excluding the latest -->
       <div class="col-md-6">
+        <h2 class="mobile-header">Slaapjes</h2>
         {#each $sleepEntries.slice(1) as entry}
           <SleepEntry {entry} latest={false} onDelete={requestDelete} />
         {/each}
       </div>
       <!-- All Food entries excluding the latest -->
       <div class="col-md-6">
+        <h2 class="mobile-header">Voedingen</h2>
         {#each $foodEntries.slice(1) as entry}
           <FoodEntry {entry} latest={false} onDelete={requestDelete} />
         {/each}
@@ -171,3 +173,18 @@
     </div>
   {/if}
 </main>
+
+<style>
+  .mobile-header {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-header {
+      display: block;
+      font-size: 1.5rem;
+      margin-top: 20px;
+      text-align: center;
+    }
+  }
+</style>

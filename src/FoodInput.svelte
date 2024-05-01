@@ -12,8 +12,9 @@
     limit,
     onSnapshot,
     addDoc,
+    where,
   } from "firebase/firestore";
-  import { onMount } from "svelte";
+  import { foodEntries } from "./stores";
 
   const isEating = writable(false);
   const foodType = writable("formula");
@@ -23,9 +24,7 @@
   const foodStart = writable(null);
   const currentFoodDocId = writable(null);
   const lastFoodStart = writable(null);
-  const foodSinceLast = writable("");
-
-  export let entries;
+  const foodSinceLast = writable("N/A");
 
   function resetFood() {
     isEating.set(false);
@@ -49,7 +48,6 @@
 
   // Functionality additions and modifications:
   function toggleFoodType(type) {
-    console.log("Food Type: " + type);
     foodType.set(type);
   }
 
@@ -105,43 +103,24 @@
     }
   }
 
-  onMount(() => {
-    const q = query(
-      collection(db, db_table),
-      orderBy("start", "desc"),
-      limit(10)
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      entries = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          start: data.start.toDate(),
-          edit_start: convertToDatetimeLocal(data.start.toDate()),
-          end: data.end ? data.end.toDate() : null,
-          edit_end: data.end ? convertToDatetimeLocal(data.end.toDate()) : null,
-        };
-      });
-      // Initialize latest end times
-      const lastFood = entries.find((e) => e.type === "food" && e.start);
-      isEating.set(!Boolean(lastFood.end));
+  $: $foodEntries, init();
 
-      if (lastFood) {
-        if (lastFood.end) {
-          lastFoodStart.set(lastFood.start);
-          updateFoodSinceLast();
-        } else {
-          currentFoodDocId.set(lastFood.id);
-          foodStart.set(lastFood.start);
-          startFoodClock();
-        }
+  function init() {
+    // Initialize latest end times
+    const lastFood = $foodEntries[0];
+
+    if (lastFood) {
+      isEating.set(!Boolean(lastFood.end));
+      if (lastFood.end) {
+        lastFoodStart.set(lastFood.start);
+        updateFoodSinceLast();
+      } else {
+        currentFoodDocId.set(lastFood.id);
+        foodStart.set(lastFood.start);
+        startFoodClock();
       }
-      // Update current activity states based on the latest entries
-      // isEating.set(!!lastFood);
-    });
-    return () => unsubscribe();
-  });
+    }
+  }
 </script>
 
 {#if $isEating}
@@ -182,16 +161,15 @@
       on:click={increaseAmount}>+10</button
     >
   </div>
-  <button on:click={endFood} class="btn btn-danger w-100 mt-2"
-    >Log Food Entry</button
+  <button on:click={endFood} class="btn btn-danger w-100 mt-2">Stop eten</button
   >
 {:else}
   <p class="text-muted text-center mt-2">
-    Time since last food: <b class="fs-2">{$foodSinceLast}</b>
+    Tijd sinds laatste maaltijd: <b class="fs-2">{$foodSinceLast}</b>
   </p>
   <button
     on:click={startFood}
     class="btn btn-primary w-100 mt-2"
-    disabled={$isEating}>Start Food Entry</button
+    disabled={$isEating}>Start Eten</button
   >
 {/if}

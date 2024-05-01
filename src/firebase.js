@@ -22,15 +22,3 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
-
-auth.onAuthStateChanged(function (user) {
-  console.log('auth state changed');
-  if (user) {
-    db.collection('users').doc(user.uid).get().then((docSnapshot) => {
-      if (!docSnapshot.exists) {
-        console.log(user.uid);
-        db.collection('users').doc(user.uid).set({});
-      }
-    });
-  }
-});

@@ -64,7 +64,7 @@
         {formatCardTime(entry.start, entry.end)}
       </p>
       <p class="card-text">
-        Duration: {entry.end
+        Duurtijd: {entry.end
           ? formatTime(entry.end - entry.start)
           : "In progress"}
       </p>

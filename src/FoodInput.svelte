@@ -65,6 +65,7 @@
     const endTimestamp = serverTimestamp();
     if (currentFoodDocId) {
       updateDoc(doc(db, db_table, currentFoodDocId), {
+        subtype: foodType,
         amount: foodAmount,
         end: endTimestamp,
       }).then(() => {
@@ -125,14 +126,14 @@
       class={foodType === "formula"
         ? "btn btn-primary"
         : "btn btn-outline-primary"}
-      ><i class="bi bi-cup-straw"></i> Infant Formula
+      ><i class="bi bi-cup-straw"></i> Flesje
     </button>
     <button
       on:click={() => toggleFoodType("solid")}
       class={foodType === "solid"
         ? "btn btn-success"
         : "btn btn-outline-success"}
-      ><i class="bi bi-apple"></i> Solid Food
+      ><i class="bi bi-apple"></i> Vaste Voeding
     </button>
   </div>
   <div class="input-group mt-2">

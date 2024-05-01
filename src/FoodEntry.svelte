@@ -42,7 +42,7 @@
             ? 'btn btn'
             : 'btn btn-outline'}{latest ? '-light' : '-primary'}"
         >
-          <i class="bi bi-cup-straw"></i> Infant Formula
+          <i class="bi bi-cup-straw"></i> Flesje
         </button>
         <button
           on:click={() => (entry.subtype = "solid")}
@@ -50,7 +50,7 @@
             ? 'btn btn'
             : 'btn btn-outline'}{latest ? '-light' : '-success'}"
         >
-          <i class="bi bi-apple"></i> Solid Food
+          <i class="bi bi-apple"></i> Vaste Voeding
         </button>
       </div>
       <input
@@ -61,11 +61,11 @@
       />
       <button
         class="btn {latest ? 'btn-light' : 'btn-primary'}"
-        on:click={() => saveEditFood(entry)}>Save</button
+        on:click={() => saveEditFood(entry)}>Opslaan</button
       >
       <button
         class="btn {latest ? 'btn-outline-light' : 'btn-outline-primary'}"
-        on:click={() => cancelEdit(entry.id)}>Cancel</button
+        on:click={() => cancelEdit(entry.id)}>Annuleer</button
       >
     </div>
   {:else}
@@ -91,15 +91,15 @@
         ></i>
         {entry.end
           ? entry.subtype === "formula"
-            ? "Infant Formula"
-            : "Solid Food"
+            ? "Flesje"
+            : "Vaste Voeding"
           : "Nog bezig"}
       </h5>
       <p class="card-text">
         {formatCardTime(entry.start, entry.end)}
       </p>
       <p class="card-text">
-        Amount: {entry.amount
+        Hoeveelheid: {entry.amount
           ? entry.amount + (entry.subtype === "formula" ? " ml" : " gr")
           : "Niet ingevuld"}
       </p>

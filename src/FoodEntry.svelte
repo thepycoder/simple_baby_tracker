@@ -2,7 +2,8 @@
   import { formatCardTime } from "./utils";
   import { editState } from "./stores";
   import { enableEdit, cancelEdit } from "./editUtils";
-  import { updateDoc, Timestamp } from "firebase/firestore";
+  import { updateDoc, Timestamp, doc } from "firebase/firestore";
+  import { db, db_table } from "./firebase";
 
   export let entry;
   export let latest;
@@ -59,8 +60,8 @@
         placeholder="Hoeveel?"
       />
       <button
-        class="btn {latest ? 'btn-light' : 'btn-primary'} on:click={() =>
-          saveEditFood(entry)}">Save</button
+        class="btn {latest ? 'btn-light' : 'btn-primary'}"
+        on:click={() => saveEditFood(entry)}>Save</button
       >
       <button
         class="btn {latest ? 'btn-outline-light' : 'btn-outline-primary'}"

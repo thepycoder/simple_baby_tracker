@@ -99,7 +99,7 @@
   $: $foodEntries, init();
 
   function init() {
-    const lastFood = foodEntries[0];
+    const lastFood = $foodEntries[0];
 
     if (lastFood) {
       isEating = !Boolean(lastFood.end);

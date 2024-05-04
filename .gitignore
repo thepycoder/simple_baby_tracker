@@ -5,3 +5,7 @@
 **/*.cache
 **/*.log
 .venv
+.vscode
+functions/venv
+**/.env
+**/__pycache__/**

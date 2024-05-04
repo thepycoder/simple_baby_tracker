@@ -6,12 +6,7 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
-import firebase_admin
-from firebase_admin import credentials, firestore
-
-
-cred = credentials.Certificate("path/to/your/serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+from firebase_admin import firestore
 
 
 @dataclass
@@ -102,11 +97,16 @@ def read_from_deona():
 
     # Use Beautiful Soup to parse and extract information
     soup = BeautifulSoup(page.content, "html.parser")
+    if soup.contents == ["null"]:
+        raise DeonaException("Iets is verkeerd gegeaan bij het inloggen...")
     divs = soup.find_all("div", class_="boekjeContentRegel")
 
     open_slaapje: Optional[Slaapje] = None
     slaapjes: List[Slaapje] = []
     voedingen: List[Voeding] = []
+
+    if len(divs) == 0:
+        raise DeonaException("Geen dagboeklijnen gevonden!")
 
     for div in divs:
         hour = div.find("div", class_="boekjeRegelDatum").text.strip()

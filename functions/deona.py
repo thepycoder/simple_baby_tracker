@@ -1,5 +1,6 @@
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
+import os
 from typing import List, Optional
 import re
 
@@ -88,7 +89,7 @@ def read_from_deona():
     # Define login data
     login_data = {
         "Email": "victor.sonck@gmail.com",
-        "Password": "***REMOVED***",
+        "Password": os.getenv("DEONA_PASSWORD"),
         "__RequestVerificationToken": token,
     }
 

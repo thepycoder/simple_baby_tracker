@@ -1,23 +1,32 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
 from typing import List, Optional
 import re
 
 import requests
 from bs4 import BeautifulSoup
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+
+cred = credentials.Certificate("path/to/your/serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
 
 
 @dataclass
 class Slaapje:
     start: datetime
     end: Optional[datetime] = None
+    type: str = "sleep"
 
 
 @dataclass
 class Voeding:
     start: datetime
     end: datetime
-    hoeveelheid: int
+    amount: int
+    type: str = "food"
+    subtype: str = "formula"
 
 
 class DeonaException(Exception):
@@ -49,10 +58,24 @@ def extract_number(string):
         )
 
 
+def record_exists(db, db_table: str, record: Voeding | Slaapje) -> bool:
+    query = (
+        db.collection(db_table)
+        .where("start", "==", record.start)
+        .where("end", "==", record.end)
+        .where("type", "==", record.type)
+        .limit(1)
+    )
+
+    return bool(query.get())
+
+
 def read_from_deona():
     standaard_hoeveelheid = 200
     # Start a session
     session = requests.Session()
+    db = firestore.client()
+    db_table = "dev_entries"
 
     # Step 1: Load the login page
     login_url = "https://lokerenkdv.mijn-deona.be/Account/Login"
@@ -115,9 +138,9 @@ def read_from_deona():
                 if (
                     len(voedingen) > 0
                     and (timestamp - voedingen[-1].end) < timedelta(hours=1)
-                    and voedingen[-1].hoeveelheid < standaard_hoeveelheid
+                    and voedingen[-1].amount < standaard_hoeveelheid
                 ):
-                    voedingen[-1].hoeveelheid = standaard_hoeveelheid
+                    voedingen[-1].amount = standaard_hoeveelheid
                     voedingen[-1].end = timestamp
 
                 else:
@@ -126,7 +149,7 @@ def read_from_deona():
                         Voeding(
                             start=timestamp - timedelta(minutes=15),
                             end=timestamp,
-                            hoeveelheid=standaard_hoeveelheid,
+                            amount=standaard_hoeveelheid,
                         )
                     )
             elif "over" in message:
@@ -136,16 +159,24 @@ def read_from_deona():
                     Voeding(
                         start=timestamp - timedelta(minutes=15),
                         end=timestamp,
-                        hoeveelheid=standaard_hoeveelheid - amount,
+                        amount=standaard_hoeveelheid - amount,
                     )
                 )
             elif "verder opgedronken" in message:
                 # Get the number, it will always be in ml left in the bottle
-                voedingen[-1].hoeveelheid = standaard_hoeveelheid
+                voedingen[-1].amount = standaard_hoeveelheid
                 voedingen[-1].end = timestamp
 
     print("\n".join([f"{s.start} {s.end}" for s in slaapjes]))
-    print("\n".join([f"{v.start} {v.end} {v.hoeveelheid}" for v in voedingen]))
+    print("\n".join([f"{v.start} {v.end} {v.amount}" for v in voedingen]))
+
+    for slaapje in slaapjes:
+        if not record_exists(db, db_table, record=slaapje):
+            db.collection(db_table).add(asdict(slaapje))
+
+    for voeding in voedingen:
+        if not record_exists(db, db_table, record=voeding):
+            db.collection(db_table).add(asdict(voeding))
 
 
 if __name__ == "__main__":

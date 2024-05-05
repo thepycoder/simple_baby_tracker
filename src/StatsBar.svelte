@@ -54,22 +54,21 @@
   });
 </script>
 
-<div class="my-4" />
+<div class="col-md-3 mb-2 text-center">
+  <div class="card text-white bg-success">
+    <h5 class="card-header">Aantal Voedingen 24u</h5>
+    <div class="card-body">
+      <h1 class="mb-2">{numberFood24h}</h1>
+      <span>{formatTime(timeFed24h)} in totaal</span>
+    </div>
+  </div>
+</div>
 <div class="col-md-3 text-center">
   <div class="card text-white bg-success">
     <h5 class="card-header">Aantal Slaapjes 24u</h5>
     <div class="card-body">
       <h1>{numberSleep24h}</h1>
       <span>{formatTime(timeSlept24h)} in totaal</span>
-    </div>
-  </div>
-</div>
-<div class="col-md-3 text-center">
-  <div class="card text-white bg-success">
-    <h5 class="card-header">Aantal Voedingen 24u</h5>
-    <div class="card-body">
-      <h1 class="mb-2">{numberFood24h}</h1>
-      <span>{formatTime(timeFed24h)} in totaal</span>
     </div>
   </div>
 </div>

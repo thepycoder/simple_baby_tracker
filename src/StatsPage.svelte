@@ -2,8 +2,9 @@
   import StatsBar from "./StatsBar.svelte";
   import { onMount } from "svelte";
   import { collection, query, where, getDocs } from "firebase/firestore";
-  import { db, db_table } from "./firebase"; // Assume you have configured firebase
+  import { db, db_table } from "./firebase";
   import { writable } from "svelte/store";
+  import { formatTime } from "./utils";
 
   function getTimestampRangeForDay(dayOffset) {
     const today = new Date();
@@ -20,7 +21,7 @@
     };
   }
 
-  async function countItemsForDayAndType(start, end, type) {
+  async function getItemStatsForDayAndType(start, end, type) {
     const itemsQuery = query(
       collection(db, db_table),
       where("end", ">=", start),
@@ -29,7 +30,19 @@
     );
 
     const snapshot = await getDocs(itemsQuery);
-    return snapshot.size;
+    let itemCount = 0;
+    let totalDuration = 0;
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      itemCount++;
+      if (data.start && data.end) {
+        totalDuration +=
+          data.end.toDate().getTime() - data.start.toDate().getTime();
+      }
+    });
+
+    return { itemCount, totalDuration };
   }
 
   let counts = writable([]);
@@ -38,9 +51,15 @@
     let tempCounts = [];
     for (let i = 0; i < 7; i++) {
       const { start, end } = getTimestampRangeForDay(i);
-      const foodCount = await countItemsForDayAndType(start, end, "food");
-      const sleepCount = await countItemsForDayAndType(start, end, "sleep");
-      tempCounts.push({ day: start.toDateString(), foodCount, sleepCount });
+      const foodStats = await getItemStatsForDayAndType(start, end, "food");
+      const sleepStats = await getItemStatsForDayAndType(start, end, "sleep");
+      tempCounts.push({
+        day: start.toDateString(),
+        foodCount: foodStats.itemCount,
+        foodDuration: foodStats.totalDuration,
+        sleepCount: sleepStats.itemCount,
+        sleepDuration: sleepStats.totalDuration,
+      });
     }
     console.log(tempCounts);
     counts.set(tempCounts);
@@ -48,7 +67,7 @@
 </script>
 
 <div class="container">
-  <div class="row mb-2 justify-content-center">
+  <div class="row mb-2 mt-4 justify-content-center">
     <StatsBar />
   </div>
   {#each $counts as count}
@@ -57,17 +76,21 @@
         <div class="card">
           <h5 class="card-header">{count.day}</h5>
           <div class="card-body row">
-            <div class="col-md-6 text-center border-end">
+            <div class="col-6 text-center border-end">
               <h1 class="d-inline">{count.foodCount}</h1>
               <small> Voedingen</small>
               <br />
-              <span class="text-muted">xxx in totaal</span>
+              <span class="text-muted"
+                >{formatTime(count.foodDuration)} in totaal</span
+              >
             </div>
-            <div class="col-md-6 text-center">
+            <div class="col-6 text-center">
               <h1 class="d-inline">{count.sleepCount}</h1>
               <small> Slaapjes</small>
               <br />
-              <span class="text-muted">xxx in totaal</span>
+              <span class="text-muted"
+                >{formatTime(count.sleepDuration)} in totaal</span
+              >
             </div>
           </div>
         </div>

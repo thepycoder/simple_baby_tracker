@@ -48,12 +48,15 @@
     }
   }
 
+  function updateSleepSinceLastNow() {
+    const now = new Date();
+    sleepSinceLast = formatTime(now - lastSleepEnd);
+  }
+
   function updateSleepSinceLast() {
     if (lastSleepEnd) {
-      const interval = setInterval(() => {
-        const now = new Date();
-        sleepSinceLast = formatTime(now - lastSleepEnd);
-      }, 1000);
+      updateSleepSinceLastNow();
+      const interval = setInterval(updateSleepSinceLastNow, 1000);
       // onDestroy(() => clearInterval(interval));
     }
   }

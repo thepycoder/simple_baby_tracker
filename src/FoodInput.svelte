@@ -76,11 +76,14 @@
     }
   }
 
+  function updateFoodSinceLastNow() {
+    const now = new Date();
+    foodSinceLast = formatTime(now - lastFoodStart);
+  }
+
   function updateFoodSinceLast() {
-    setInterval(() => {
-      const now = new Date();
-      foodSinceLast = formatTime(now - lastFoodStart);
-    }, 1000);
+    updateFoodSinceLastNow();
+    setInterval(updateFoodSinceLastNow, 1000);
   }
 
   function stopFoodClock() {

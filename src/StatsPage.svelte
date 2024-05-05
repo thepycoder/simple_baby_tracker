@@ -1,8 +1,10 @@
 <script>
-  // Script for new page if needed
+  import StatsBar from "./StatsBar.svelte";
 </script>
 
-<div class="container mt-5">
-  <h1>New Page</h1>
+<div class="container">
+  <div class="row justify-content-center">
+    <StatsBar />
+  </div>
   <!-- Add content here -->
 </div>

@@ -18,7 +18,6 @@
   import FoodEntry from "./FoodEntry.svelte";
   import FoodInput from "./FoodInput.svelte";
   import SleepInput from "./SleepInput.svelte";
-  import StatsBar from "./StatsBar.svelte";
   import { foodEntries, sleepEntries } from "./stores";
 
   onMount(() => {
@@ -103,7 +102,7 @@
   }
 </script>
 
-<main class="container mt-5 pb-5">
+<main class="container pb-5">
   <ConfirmModal
     show={showModal}
     message="Are you sure you want to delete this entry?"
@@ -150,10 +149,6 @@
         <FoodEntry {entry} latest={false} onDelete={requestDelete} />
       {/each}
     </div>
-  </div>
-  <div class="row justify-content-center">
-    <h2 class="mobile-header">Statistiekskes</h2>
-    <StatsBar />
   </div>
 </main>
 

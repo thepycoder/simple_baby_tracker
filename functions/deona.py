@@ -92,7 +92,7 @@ def read_from_deona():
     response = session.post(login_url, data=login_data)
 
     # Now logged in, you can request another page
-    url_page = "https://lokerenkdv.mijn-deona.be/api/BoekjeContent/2740/1/"
+    url_page = "https://lokerenkdv.mijn-deona.be/api/BoekjeContent/2740/0/"
     page = session.get(url_page)
 
     # Use Beautiful Soup to parse and extract information

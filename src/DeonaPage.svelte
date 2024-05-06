@@ -4,7 +4,7 @@
 
   let inputText = "";
   if ($foodEntries[0] && $sleepEntries[0]) {
-    inputText = `Lio heeft heet laatst gegeten om ${formatForCopy($foodEntries[0].start)} en heeft geslapen tot ${formatForCopy($sleepEntries[0].end)}`;
+    inputText = `Lio heeft heeft laatst gegeten om ${formatForCopy($foodEntries[0].start)} en heeft geslapen tot ${formatForCopy($sleepEntries[0].end)}`;
   }
 
   console.log($foodEntries[0]);

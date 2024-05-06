@@ -15,6 +15,10 @@
         ><button type="button" class="btn btn-outline-secondary">Stats</button
         ></a
       >
+      <a class="nav-item nav-link" use:link href="/deona"
+        ><button type="button" class="btn btn-outline-secondary">Deona</button
+        ></a
+      >
     </div>
   </div>
 </nav>

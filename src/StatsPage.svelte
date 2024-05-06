@@ -98,29 +98,7 @@
   }
 
   onMount(() => {
-    // let tempCounts = [];
-    // for (let i = 0; i < 7; i++) {
-    //   const { start, end } = getTimestampRangeForDay(i);
-    //   const foodStats = await getItemStatsForDayAndType(start, end, "food");
-    //   const sleepStats = await getItemStatsForDayAndType(start, end, "sleep");
-    //   tempCounts.push({
-    //     day: start.toDateString(),
-    //     foodCount: foodStats.itemCount,
-    //     foodDuration: foodStats.totalDuration,
-    //     sleepCount: sleepStats.itemCount,
-    //     sleepDuration: sleepStats.totalDuration,
-    //   });
-    // }
-    // console.log(tempCounts);
-    // counts.set(tempCounts);
-
     getTotalActiveHours();
-    // const array = Array.from(counts, ([key, value]) => ({
-    //   key, // Spread the key
-    //   ...value, // Spread the values from the object
-    // }));
-
-    // console.log("counts", counts);
   });
 </script>
 

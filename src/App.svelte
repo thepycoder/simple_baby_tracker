@@ -7,6 +7,7 @@
   import Navbar from "./Navbar.svelte";
   import TimerPage from "./TimerPage.svelte";
   import StatsPage from "./StatsPage.svelte";
+  import DeonaPage from "./DeonaPage.svelte";
 
   let user = null;
 
@@ -29,6 +30,7 @@
   <Router>
     <Route path="/" component={TimerPage} />
     <Route path="/stats" component={StatsPage} />
+    <Route path="/deona" component={DeonaPage} />
   </Router>
 {:else}
   <div class="headerBar">

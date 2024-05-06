@@ -12,6 +12,12 @@ export function formatTime(microseconds) {
   return `${hours}:${paddedMinutes}:${paddedSeconds}`;
 }
 
+export function formatForCopy(date) {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  return `${hours}u${minutes}m`;
+}
+
 export function formatCardTime(start, end) {
   // Create a Date object from the start timestamp
   const startDate = new Date(start);

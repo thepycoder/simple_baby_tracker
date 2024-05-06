@@ -12,6 +12,8 @@
   import { db, db_table } from "./firebase";
   import { formatTime } from "./utils";
 
+  let activeHours = [];
+
   function getTotalActiveHours() {
     const now = new Date();
     const sevenDaysAgoMidnight = new Date(
@@ -23,54 +25,50 @@
     const q = query(
       collection(db, db_table),
       where("start", ">=", sevenDaysAgoMidnight),
-      orderBy("start")
+      orderBy("start", "desc")
     );
 
     // We'll use a promise to handle the async nature of the onSnapshot function
-    return new Promise((resolve, reject) => {
-      const unsubscribe = onSnapshot(
-        q,
-        (snapshot) => {
-          snapshot.docs.forEach((doc) => {
-            const data = doc.data();
-            let startDate = data.start.toDate();
-            let endDate = data.end.toDate();
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          if (!data.end) {
+            return;
+          }
+          let startDate = data.start.toDate();
+          let endDate = data.end.toDate();
 
-            const nextMidnight = new Date(startDate);
-            nextMidnight.setDate(nextMidnight.getDate() + 1);
-            nextMidnight.setHours(0, 0, 0, 0);
+          const nextMidnight = new Date(startDate);
+          nextMidnight.setDate(nextMidnight.getDate() + 1);
+          nextMidnight.setHours(0, 0, 0, 0);
 
-            if (nextMidnight < endDate) {
-              updateMap(
-                dateToTypeToDuration,
-                data.type,
-                startDate,
-                nextMidnight
-              );
-              updateMap(dateToTypeToDuration, data.type, nextMidnight, endDate);
-            } else {
-              updateMap(dateToTypeToDuration, data.type, startDate, endDate);
-            }
-          });
+          if (nextMidnight < endDate) {
+            updateMap(dateToTypeToDuration, data.type, startDate, nextMidnight);
+            updateMap(dateToTypeToDuration, data.type, nextMidnight, endDate);
+          } else {
+            updateMap(dateToTypeToDuration, data.type, startDate, endDate);
+          }
+        });
 
-          // Convert map to array
-          const resultArray = Array.from(
-            dateToTypeToDuration,
-            ([date, data]) => ({
-              date,
-              ...data,
-            })
-          );
+        // Convert map to array
+        const resultArray = Array.from(
+          dateToTypeToDuration,
+          ([date, data]) => ({
+            date,
+            ...data,
+          })
+        );
 
-          console.log("Activities Array: ", resultArray);
-          resolve(resultArray); // Resolve with the resulting array
-        },
-        (error) => {
-          console.error("Error fetching data: ", error);
-          reject(error); // Reject the promise in case of error
-        }
-      );
-    });
+        console.log("Activities Array: ", resultArray);
+        activeHours = resultArray;
+      },
+      (error) => {
+        console.error("Error fetching data: ", error);
+        reject(error); // Reject the promise in case of error
+      }
+    );
   }
 
   function updateMap(dateToTypeToDuration, type, startDate, currentEndDate) {
@@ -90,9 +88,7 @@
     }
   }
 
-  let activeHours = [];
-
-  onMount(async () => {
+  onMount(() => {
     // let tempCounts = [];
     // for (let i = 0; i < 7; i++) {
     //   const { start, end } = getTimestampRangeForDay(i);
@@ -109,15 +105,7 @@
     // console.log(tempCounts);
     // counts.set(tempCounts);
 
-    getTotalActiveHours()
-      .then((activitiesArray) => {
-        console.log("Returned Activities Array: ", activitiesArray);
-        activeHours = activitiesArray;
-        console.log("activeHours", activeHours);
-      })
-      .catch((error) => {
-        console.error("Error: ", error);
-      });
+    getTotalActiveHours();
     // const array = Array.from(counts, ([key, value]) => ({
     //   key, // Spread the key
     //   ...value, // Spread the values from the object

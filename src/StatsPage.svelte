@@ -20,22 +20,25 @@
       now.getTime() - 7 * 24 * 60 * 60 * 1000
     );
     sevenDaysAgoMidnight.setHours(0, 0, 0, 0);
-    let dateToTypeToDuration = new Map();
 
     const q = query(
       collection(db, db_table),
-      where("start", ">=", sevenDaysAgoMidnight),
-      orderBy("start", "desc")
+      where("end", ">=", sevenDaysAgoMidnight),
+      orderBy("end", "desc")
     );
 
     // We'll use a promise to handle the async nature of the onSnapshot function
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        let dateToTypeToDuration = new Map();
         snapshot.docs.forEach((doc) => {
           const data = doc.data();
           if (!data.end) {
             return;
+          }
+          if (data.type == "sleep") {
+            console.log(data.start.toDate() + " => ", data.end.toDate());
           }
           let startDate = data.start.toDate();
           let endDate = data.end.toDate();
@@ -62,7 +65,7 @@
         );
 
         console.log("Activities Array: ", resultArray);
-        activeHours = resultArray;
+        activeHours = resultArray.slice(1, 7);
       },
       (error) => {
         console.error("Error fetching data: ", error);
@@ -73,7 +76,13 @@
 
   function updateMap(dateToTypeToDuration, type, startDate, currentEndDate) {
     const duration = currentEndDate - startDate;
-    const dateKey = startDate.toISOString().split("T")[0];
+    const dateString = startDate.toLocaleDateString("nl-BE", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+    });
+    const dateKey = dateString.charAt(0).toUpperCase() + dateString.slice(1);
 
     if (!dateToTypeToDuration.has(dateKey)) {
       dateToTypeToDuration.set(dateKey, {

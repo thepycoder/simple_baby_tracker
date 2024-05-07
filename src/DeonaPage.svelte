@@ -42,8 +42,15 @@
   }
 
   let inputText = "";
+  let sleepEnd;
+  if ($sleepEntries[0].end) {
+    sleepEnd = $sleepEntries[0].end;
+  } else {
+    // If no end, just take right now
+    sleepEnd = new Date();
+  }
   if ($foodEntries[0] && $sleepEntries[0]) {
-    inputText = `Lio heeft heeft laatst gegeten om ${formatForCopy($foodEntries[0].start)} en heeft geslapen tot ${formatForCopy($sleepEntries[0].end)}`;
+    inputText = `Lio heeft heeft laatst gegeten om ${formatForCopy($foodEntries[0].start)} en heeft geslapen tot ${formatForCopy(sleepEnd)}`;
   }
 
   console.log($foodEntries[0]);

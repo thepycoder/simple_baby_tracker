@@ -10,12 +10,22 @@
   export let onDelete;
 
   async function saveEditFood(entry) {
-    await updateDoc(doc(db, db_table, entry.id), {
-      start: Timestamp.fromDate(entry.start),
-      end: Timestamp.fromDate(entry.end),
-      subtype: entry.subtype,
-      amount: entry.amount,
-    });
+    console.log(entry);
+    const updateData = {};
+
+    updateData.start = Timestamp.fromDate(entry.start);
+    updateData.subtype = entry.subtype;
+
+    if (entry.end) {
+      console.log(entry.end);
+      updateData.end = Timestamp.fromDate(entry.end);
+    }
+    if (entry.amount) {
+      console.log(entry.amount);
+      updateData.amount = entry.amount;
+    }
+
+    await updateDoc(doc(db, db_table, entry.id), updateData);
     editState.update((state) => ({ ...state, [entry.id]: false }));
   }
 </script>

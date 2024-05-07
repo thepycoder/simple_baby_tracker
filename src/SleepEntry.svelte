@@ -10,10 +10,15 @@
   export let onDelete;
 
   async function saveEditSleep(entry) {
-    await updateDoc(doc(db, db_table, entry.id), {
-      start: Timestamp.fromDate(entry.start),
-      end: Timestamp.fromDate(entry.end),
-    });
+    const updateData = {};
+
+    updateData.start = Timestamp.fromDate(entry.start);
+
+    if (entry.end) {
+      updateData.end = Timestamp.fromDate(entry.end);
+    }
+
+    await updateDoc(doc(db, db_table, entry.id), updateData);
     editState.update((state) => ({ ...state, [entry.id]: false }));
   }
 </script>

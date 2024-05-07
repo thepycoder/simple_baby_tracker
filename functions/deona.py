@@ -1,8 +1,9 @@
 from dataclasses import asdict, dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 import os
 from typing import List, Optional
 import re
+import pytz
 
 import requests
 from bs4 import BeautifulSoup
@@ -39,7 +40,12 @@ def get_timestamp_with_current_date(time_str):
     # Combine the date and time into a datetime object
     timestamp = datetime.combine(current_date, time_obj)
 
-    return timestamp
+    # Localize
+    local_tz = pytz.timezone("Europe/Brussels")
+    local_dt = local_tz.localize(timestamp)
+    utc_dt = local_dt.astimezone(pytz.UTC)
+
+    return utc_dt
 
 
 def extract_number(string):

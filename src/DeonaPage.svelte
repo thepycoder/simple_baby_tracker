@@ -1,6 +1,45 @@
 <script>
   import { foodEntries, sleepEntries } from "./stores";
   import { formatForCopy } from "./utils";
+  import { writable } from "svelte/store";
+
+  let isLoading = writable(false);
+  let errorMessage = writable("");
+  let responseData = writable(null);
+
+  async function makeApiRequest() {
+    errorMessage.set("");
+    responseData.set(null);
+    isLoading.set(true);
+
+    try {
+      const response = await fetch(
+        "https://update-from-deona-dbx5pfpliq-ew.a.run.app",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.text();
+        console.log(data);
+        responseData.set(data);
+      } else if (response.status === 400) {
+        const errorText = await response.text();
+        errorMessage.set(errorText);
+      } else {
+        errorMessage.set("An unknown error occurred");
+      }
+    } catch (error) {
+      console.log(error);
+      errorMessage.set("Network error");
+    } finally {
+      isLoading.set(false);
+    }
+  }
 
   let inputText = "";
   if ($foodEntries[0] && $sleepEntries[0]) {
@@ -21,6 +60,17 @@
 <div class="container">
   <div class="row mb-2 mt-4 justify-content-center">
     <div class="col-lg-8">
+      {#if $errorMessage}
+        <div class="alert alert-danger mt-2">
+          Error: {$errorMessage}
+        </div>
+      {/if}
+
+      {#if $responseData}
+        <div class="alert alert-success mt-2">
+          Response: {$responseData}
+        </div>
+      {/if}
       <div class="card">
         <div class="card-body">
           <div class="row">
@@ -36,7 +86,11 @@
               </button>
             </div>
             <div class="col">
-              <button class="btn btn-primary w-100 h-100" on:click={sync}>
+              <button
+                class="btn btn-primary w-100 h-100"
+                on:click={makeApiRequest}
+                disabled={$isLoading}
+              >
                 Sync
               </button>
             </div>

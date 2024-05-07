@@ -98,7 +98,7 @@ def read_from_deona():
     # Use Beautiful Soup to parse and extract information
     soup = BeautifulSoup(page.content, "html.parser")
     if soup.contents == ["null"]:
-        raise DeonaException("Iets is verkeerd gegeaan bij het inloggen...")
+        raise DeonaException("Iets is verkeerd gegaan bij het inloggen...")
     divs = soup.find_all("div", class_="boekjeContentRegel")
 
     open_slaapje: Optional[Slaapje] = None
@@ -170,6 +170,11 @@ def read_from_deona():
 
     print("\n".join([f"{s.start} {s.end}" for s in slaapjes]))
     print("\n".join([f"{v.start} {v.end} {v.amount}" for v in voedingen]))
+
+    if len(slaapjes) == 0 and len(voedingen) == 0:
+        raise DeonaException(
+            "Geen dagboek acties gevonden op de site, waarschijnlijk is de dag nog niet afgesloten in Deona."
+        )
 
     for slaapje in slaapjes:
         if not record_exists(db, db_table, record=slaapje):

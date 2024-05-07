@@ -15,6 +15,7 @@ class Slaapje:
     start: datetime
     end: Optional[datetime] = None
     type: str = "sleep"
+    deona: bool = True
 
 
 @dataclass
@@ -24,6 +25,7 @@ class Voeding:
     amount: int
     type: str = "food"
     subtype: str = "formula"
+    deona: bool = True
 
 
 class DeonaException(Exception):

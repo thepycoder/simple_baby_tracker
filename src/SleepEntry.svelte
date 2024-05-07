@@ -44,6 +44,11 @@
     </div>
   {:else}
     <div class="card-body position-relative">
+      {#if entry.deona}
+        <div class="position-absolute bottom-0 end-0 mx-3 my-2">
+          <i class="bi bi-cloud"></i>
+        </div>
+      {/if}
       <div class="position-absolute top-0 end-0 m-2">
         <!-- Edit button with icon -->
         <button on:click={() => enableEdit(entry.id)} class="btn btn-light">

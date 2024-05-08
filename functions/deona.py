@@ -79,7 +79,7 @@ def read_from_deona():
     # Start a session
     session = requests.Session()
     db = firestore.client()
-    db_table = "dev_entries"
+    db_table = "entries"
 
     # Step 1: Load the login page
     login_url = "https://lokerenkdv.mijn-deona.be/Account/Login"
@@ -118,6 +118,8 @@ def read_from_deona():
 
     for div in divs:
         hour = div.find("div", class_="boekjeRegelDatum").text.strip()
+        if hour == "":
+            continue
         timestamp = get_timestamp_with_current_date(hour)
         message = div.find("div", class_="boekjeRegelBericht").text.strip()
 

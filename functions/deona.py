@@ -79,7 +79,7 @@ def read_from_deona():
     # Start a session
     session = requests.Session()
     db = firestore.client()
-    db_table = "entries"
+    db_table = "dev_entries"
 
     # Step 1: Load the login page
     login_url = "https://lokerenkdv.mijn-deona.be/Account/Login"

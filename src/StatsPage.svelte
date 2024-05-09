@@ -16,14 +16,12 @@
 
   function getTotalActiveHours() {
     const now = new Date();
-    const sevenDaysAgoMidnight = new Date(
-      now.getTime() - 7 * 24 * 60 * 60 * 1000
-    );
-    sevenDaysAgoMidnight.setHours(0, 0, 0, 0);
+    const dateCutoff = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+    dateCutoff.setHours(0, 0, 0, 0);
 
     const q = query(
       collection(db, db_table),
-      where("end", ">=", sevenDaysAgoMidnight),
+      where("end", ">=", dateCutoff),
       orderBy("end", "desc")
     );
 
@@ -65,7 +63,7 @@
         );
 
         console.log("Activities Array: ", resultArray);
-        activeHours = resultArray.slice(1, 7);
+        activeHours = resultArray.slice(1, 59);
       },
       (error) => {
         console.error("Error fetching data: ", error);

@@ -83,7 +83,7 @@
         <div class="col">
           <!-- <h5 class="card-title">Sleep</h5> -->
           <h2 class="display-5 fw-bold">
-            {entry.end ? formatTime(entry.end - entry.start) : "In progress"}
+            {entry.end ? formatTime(entry.end - entry.start) : "Bezig"}
           </h2>
           <p class="card-text {latest ? 'text-light' : 'text-muted'}">
             {formatCardTime(entry.start, entry.end)}

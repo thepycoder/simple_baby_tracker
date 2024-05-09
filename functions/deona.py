@@ -8,6 +8,8 @@ import pytz
 import requests
 from bs4 import BeautifulSoup
 from firebase_admin import firestore
+import firebase_admin
+from firebase_admin import credentials
 
 
 @dataclass
@@ -196,4 +198,8 @@ def read_from_deona():
 
 
 if __name__ == "__main__":
+    cred = credentials.Certificate(
+        "/home/victor/Projects/babytracker/babytracker-b2323-109057e17ae6.json"
+    )
+    firebase_admin.initialize_app(cred)
     read_from_deona()

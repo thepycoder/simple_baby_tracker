@@ -43,7 +43,7 @@
 
   let inputText = "";
   let sleepEnd;
-  if ($sleepEntries[0].end) {
+  if ($sleepEntries[0] && $sleepEntries[0].end) {
     sleepEnd = $sleepEntries[0].end;
   } else {
     // If no end, just take right now

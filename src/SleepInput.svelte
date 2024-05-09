@@ -112,12 +112,21 @@
     >Stop Slaapje</button
   >
 {:else}
-  <p class="text-muted text-center mt-2">
-    Tijd sinds laatste slaapje: <b class="fs-2">{sleepSinceLast}</b>
-  </p>
-  <button
-    on:click={startSleep}
-    class="btn btn-primary w-100 mt-2"
-    disabled={isSleeping}>Start Slaapje</button
-  >
+  <div class="card mt-4 border-success">
+    <div class="row g-0">
+      <div class="col-6 d-flex align-items-center">
+        <h2 class="card-text text-center display-5 fw-bold m-0 w-100">
+          {sleepSinceLast}
+        </h2>
+      </div>
+      <div class="col-6 bg-success">
+        <button
+          on:click={startSleep}
+          class="btn btn-success w-100 h-100"
+          disabled={isSleeping}
+          ><i class="bi bi-moon-stars" style="font-size: 4em;"></i></button
+        >
+      </div>
+    </div>
+  </div>
 {/if}

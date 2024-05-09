@@ -23,7 +23,7 @@
   }
 </script>
 
-<div class="card mb-3 {latest ? 'text-bg-success' : 'border-success'}">
+<div class="card {latest ? 'text-bg-success' : 'mb-3 border-2 border-success'}">
   {#if $editState[entry.id]}
     <div class="card-body">
       <input
@@ -78,7 +78,7 @@
       </div>
       <div class="row">
         <div class="col-auto text-center">
-          <i class="bi bi-moon-stars" style="font-size: 4em;"></i>
+          <i class="bi bi-moon-stars" style="font-size: 3em;"></i>
         </div>
         <div class="col">
           <!-- <h5 class="card-title">Sleep</h5> -->

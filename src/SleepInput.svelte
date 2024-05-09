@@ -105,7 +105,7 @@
 </script>
 
 {#if isSleeping}
-  <div class="card mt-4 border-danger">
+  <div class="card border-danger">
     <div class="row g-0">
       <div class="col-6 d-flex align-items-center">
         <h2 class="card-text text-center display-5 fw-bold m-0 w-100">
@@ -126,7 +126,7 @@
     >Stop Slaapje</button
   > -->
 {:else}
-  <div class="card mt-4 border-success">
+  <div class="card border-success">
     <div class="row g-0">
       <div class="col-6 d-flex align-items-center">
         <h2 class="card-text text-center display-5 fw-bold m-0 w-100">

@@ -105,12 +105,26 @@
 </script>
 
 {#if isSleeping}
-  <p class="text-muted text-center mt-2">
+  <div class="card mt-4 border-danger">
+    <div class="row g-0">
+      <div class="col-6 d-flex align-items-center">
+        <h2 class="card-text text-center display-5 fw-bold m-0 w-100">
+          {formatTime(sleepDuration)}
+        </h2>
+      </div>
+      <div class="col-6 bg-danger">
+        <button on:click={endSleep} class="btn btn-danger w-100 h-100"
+          ><i class="bi bi-moon-stars" style="font-size: 4em;"></i></button
+        >
+      </div>
+    </div>
+  </div>
+  <!-- <p class="text-muted text-center mt-2">
     Tijd sinds start slaapje: <b class="fs-2">{formatTime(sleepDuration)}</b>
   </p>
   <button on:click={endSleep} class="btn btn-danger w-100 mt-2"
     >Stop Slaapje</button
-  >
+  > -->
 {:else}
   <div class="card mt-4 border-success">
     <div class="row g-0">
@@ -120,10 +134,7 @@
         </h2>
       </div>
       <div class="col-6 bg-success">
-        <button
-          on:click={startSleep}
-          class="btn btn-success w-100 h-100"
-          disabled={isSleeping}
+        <button on:click={startSleep} class="btn btn-success w-100 h-100"
           ><i class="bi bi-moon-stars" style="font-size: 4em;"></i></button
         >
       </div>

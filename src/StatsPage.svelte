@@ -48,10 +48,10 @@
           nextMidnight.setHours(0, 0, 0, 0);
 
           if (nextMidnight < endDate) {
-            updateMap(dateToTypeToDuration, data.type, startDate, nextMidnight);
-            updateMap(dateToTypeToDuration, data.type, nextMidnight, endDate);
+            updateMap(dateToTypeToDuration, data, startDate, nextMidnight);
+            updateMap(dateToTypeToDuration, data, nextMidnight, endDate);
           } else {
-            updateMap(dateToTypeToDuration, data.type, startDate, endDate);
+            updateMap(dateToTypeToDuration, data, startDate, endDate);
           }
         });
 
@@ -74,7 +74,7 @@
     );
   }
 
-  function updateMap(dateToTypeToDuration, type, startDate, currentEndDate) {
+  function updateMap(dateToTypeToDuration, data, startDate, currentEndDate) {
     const duration = currentEndDate - startDate;
     const dateString = startDate.toLocaleDateString("nl-BE", {
       year: "numeric",
@@ -86,13 +86,13 @@
 
     if (!dateToTypeToDuration.has(dateKey)) {
       dateToTypeToDuration.set(dateKey, {
-        [type]: duration,
-        [type + "Count"]: 1,
+        [data.type]: duration,
+        [data.type + "Count"]: 1,
       });
     } else {
       const dateData = dateToTypeToDuration.get(dateKey);
-      dateData[type] = (dateData[type] || 0) + duration;
-      dateData[type + "Count"] = (dateData[type + "Count"] || 0) + 1;
+      dateData[data.type] = (dateData[data.type] || 0) + duration;
+      dateData[data.type + "Count"] = (dateData[data.type + "Count"] || 0) + 1;
       dateToTypeToDuration.set(dateKey, dateData); // Update the map entry
     }
   }
@@ -113,19 +113,15 @@
           <h5 class="card-header">{count.date}</h5>
           <div class="card-body row">
             <div class="col-6 text-center border-end">
+              <h1 class="d-inline">{formatTime(count.sleep).slice(0, -3)}</h1>
+              <small> Geslapen</small>
+            </div>
+            <div class="col-6 text-center">
               <h1 class="d-inline">{count.foodCount}</h1>
               <small> Voedingen</small>
               <br />
               <span class="text-muted"
                 >{formatTime(count.food).slice(0, -3)} in totaal</span
-              >
-            </div>
-            <div class="col-6 text-center">
-              <h1 class="d-inline">{count.sleepCount}</h1>
-              <small> Slaapjes</small>
-              <br />
-              <span class="text-muted"
-                >{formatTime(count.sleep).slice(0, -3)} in totaal</span
               >
             </div>
           </div>

@@ -4,7 +4,7 @@
 </script>
 
 <nav class="navbar navbar-expand navbar-light bg-light">
-  <div class="container">
+  <div class="container d-flex justify-content-center">
     <div class="navbar-brand"></div>
     <div class="navbar-nav">
       <a class="nav-item nav-link" use:link href="/"

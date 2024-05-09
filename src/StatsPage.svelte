@@ -88,11 +88,28 @@
       dateToTypeToDuration.set(dateKey, {
         [data.type]: duration,
         [data.type + "Count"]: 1,
+        [data.type + "SolidAmount"]:
+          data.subtype == "solid" ? Number(data.amount) || 0 : 0, // Initialize amount if it exists
+        [data.type + "FormulaAmount"]:
+          data.subtype == "formula" ? Number(data.amount) || 0 : 0, // Initialize amount if it exists
       });
     } else {
       const dateData = dateToTypeToDuration.get(dateKey);
       dateData[data.type] = (dateData[data.type] || 0) + duration;
       dateData[data.type + "Count"] = (dateData[data.type + "Count"] || 0) + 1;
+
+      if (data.amount) {
+        if (data.subtype == "solid") {
+          // Add the amount if it exists
+          dateData[data.type + "SolidAmount"] =
+            (dateData[data.type + "SolidAmount"] || 0) + Number(data.amount);
+        } else if (data.subtype == "formula") {
+          // Add the amount if it exists
+          dateData[data.type + "FormulaAmount"] =
+            (dateData[data.type + "FormulaAmount"] || 0) + Number(data.amount);
+        }
+      }
+
       dateToTypeToDuration.set(dateKey, dateData); // Update the map entry
     }
   }
@@ -115,13 +132,16 @@
             <div class="col-6 text-center border-end">
               <h1 class="d-inline">{formatTime(count.sleep).slice(0, -3)}</h1>
               <small> Geslapen</small>
+              <br />
+              <span class="text-muted">{count.sleepCount} dutjes in totaal</span
+              >
             </div>
             <div class="col-6 text-center">
               <h1 class="d-inline">{count.foodCount}</h1>
               <small> Voedingen</small>
               <br />
               <span class="text-muted"
-                >{formatTime(count.food).slice(0, -3)} in totaal</span
+                >{count.foodFormulaAmount} ml + {count.foodSolidAmount} gr</span
               >
             </div>
           </div>

@@ -9,3 +9,4 @@
 functions/venv
 **/.env
 **/__pycache__/**
+.sass-cache

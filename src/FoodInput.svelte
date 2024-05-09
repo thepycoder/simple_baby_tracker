@@ -120,28 +120,39 @@
 </script>
 
 {#if isEating}
-  <p class="text-muted text-center mt-2">
-    Aan het eten voor: <b class="fs-2">{formatTime(eatDuration)}</b>
-  </p>
+  <div class="card border-danger">
+    <div class="row g-0">
+      <div class="col-6 d-flex align-items-center">
+        <h2 class="card-text text-center display-5 fw-bold m-0 w-100">
+          {formatTime(eatDuration)}
+        </h2>
+      </div>
+      <div class="col-6 bg-danger">
+        <button on:click={endFood} class="btn btn-danger w-100 h-100"
+          ><i class="bi bi-cup-straw" style="font-size: 4em;"></i></button
+        >
+      </div>
+    </div>
+  </div>
   <div class="btn-group mt-2 w-100">
     <button
       on:click={() => toggleFoodType("formula")}
       class={foodType === "formula"
-        ? "btn btn-primary"
-        : "btn btn-outline-primary"}
+        ? "btn w-50 btn-primary"
+        : "btn w-50 btn-outline-primary"}
       ><i class="bi bi-cup-straw"></i> Flesje
     </button>
     <button
       on:click={() => toggleFoodType("solid")}
       class={foodType === "solid"
-        ? "btn btn-success"
-        : "btn btn-outline-success"}
+        ? "btn w-50 btn-primary"
+        : "btn w-50 btn-outline-primary"}
       ><i class="bi bi-apple"></i> Vaste Voeding
     </button>
   </div>
   <div class="input-group mt-2">
     <button
-      class="btn btn-outline-secondary"
+      class="btn btn-outline-primary"
       type="button"
       on:click={decreaseAmount}>-10</button
     >
@@ -152,20 +163,24 @@
       placeholder="Hoeveel?"
     />
     <button
-      class="btn btn-outline-secondary"
+      class="btn btn-outline-primary"
       type="button"
       on:click={increaseAmount}>+10</button
     >
   </div>
-  <button on:click={endFood} class="btn btn-danger w-100 mt-2">Stop eten</button
-  >
 {:else}
-  <p class="text-muted text-center mt-2">
-    Tijd sinds laatste maaltijd: <b class="fs-2">{foodSinceLast}</b>
-  </p>
-  <button
-    on:click={startFood}
-    class="btn btn-primary w-100 mt-2"
-    disabled={isEating}>Start Eten</button
-  >
+  <div class="card border-primary">
+    <div class="row g-0">
+      <div class="col-6 d-flex align-items-center">
+        <h2 class="card-text text-center display-5 fw-bold m-0 w-100">
+          {foodSinceLast}
+        </h2>
+      </div>
+      <div class="col-6 bg-primary">
+        <button on:click={startFood} class="btn btn-primary w-100 h-100"
+          ><i class="bi bi-cup-straw" style="font-size: 4em;"></i></button
+        >
+      </div>
+    </div>
+  </div>
 {/if}

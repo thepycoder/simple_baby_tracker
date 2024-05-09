@@ -110,30 +110,31 @@
     on:cancel={handleCancel}
   />
 
-  <div class="row justify-content-center">
+  <div class="row justify-content-center mb-4 mt-4">
     <!-- Sleep input -->
-    <section class="col-md-6 mb-3">
+    <section class="col-md-6 mb-2">
       <SleepInput />
     </section>
     <!-- Food input -->
-    <section class="col-md-6 mb-3">
+    <section class="col-md-6 mb-2">
       <FoodInput />
     </section>
   </div>
   <div class="row justify-content-center">
     <!-- Latest Sleep entry -->
-    <div class="col-md-6">
+    <div class="col-md-6 mb-2">
       {#each $sleepEntries.slice(0, 1) as entry}
         <SleepEntry {entry} latest={true} onDelete={requestDelete} />
       {/each}
     </div>
     <!-- Latest Food entry -->
-    <div class="col-md-6">
+    <div class="col-md-6 mb-2">
       {#each $foodEntries.slice(0, 1) as entry}
         <FoodEntry {entry} latest={true} onDelete={requestDelete} />
       {/each}
     </div>
   </div>
+  <div class="d-none d-lg-block" style="height: 50px;"></div>
   <div class="row justify-content-center">
     <!-- All Sleep entries excluding the latest -->
     <div class="col-md-6">

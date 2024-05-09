@@ -30,7 +30,7 @@
   }
 </script>
 
-<div class="card mb-3 {latest ? 'text-bg-success' : ''}">
+<div class="card {latest ? 'text-bg-primary' : 'mb-3 border-2 border-primary'}">
   {#if $editState[entry.id]}
     <div class="card-body">
       <input
@@ -81,43 +81,52 @@
   {:else}
     <div class="card-body position-relative">
       {#if entry.deona}
-        <div class="position-absolute bottom-0 end-0 mx-3 my-2">
-          <i class="bi bi-cloud"></i>
+        <div class="position-absolute bottom-0 end-0 m-2">
+          <button
+            class="btn {latest ? 'btn-dark' : 'btn-light'}"
+            style="background: transparent; border: none;"
+          >
+            <i class="bi bi-cloud" style="font-size: 1.5em;"></i>
+          </button>
         </div>
       {/if}
       <div class="position-absolute top-0 end-0 m-2">
         <!-- Edit button with icon -->
-        <button on:click={() => enableEdit(entry.id)} class="btn btn-light">
-          <i class="bi bi-pencil-square"></i>
+        <button
+          on:click={() => enableEdit(entry.id)}
+          class="btn {latest ? 'btn-dark' : 'btn-light'}"
+          style="background: transparent; border: none;"
+        >
+          <i class="bi bi-pencil-square" style="font-size: 1.5em;"></i>
         </button>
         <button
           on:click={() => onDelete(entry.id)}
-          class="btn btn-light"
-          style="right: 40px;"
+          class="btn {latest ? 'btn-dark' : 'btn-light'}"
+          style="background: transparent; border: none;"
         >
-          <i class="bi bi-trash-fill"></i>
+          <i class="bi bi-trash-fill" style="font-size: 1.5em;"></i>
         </button>
       </div>
-      <h5 class="card-title">
-        <i
-          class={entry.subtype === "formula"
-            ? "bi bi-cup-straw"
-            : "bi bi-apple"}
-        ></i>
-        {entry.end
-          ? entry.subtype === "formula"
-            ? "Flesje"
-            : "Vaste Voeding"
-          : "Nog bezig"}
-      </h5>
-      <p class="card-text">
-        {formatCardTime(entry.start, entry.end)}
-      </p>
-      <p class="card-text">
-        Hoeveelheid: {entry.amount
-          ? entry.amount + (entry.subtype === "formula" ? " ml" : " gr")
-          : "Niet ingevuld"}
-      </p>
+      <div class="row">
+        <div class="col-auto text-center">
+          <i
+            class={entry.subtype === "formula"
+              ? "bi bi-cup-straw"
+              : "bi bi-apple"}
+            style="font-size: 3em;"
+          ></i>
+        </div>
+        <div class="col">
+          <h2 class="display-5 fw-bold">
+            {entry.amount
+              ? entry.amount + (entry.subtype === "formula" ? " ml" : " gr")
+              : "Niet ingevuld"}
+          </h2>
+          <p class="card-text {latest ? 'text-light' : 'text-muted'}">
+            {formatCardTime(entry.start, entry.end)}
+          </p>
+        </div>
+      </div>
     </div>
   {/if}
 </div>

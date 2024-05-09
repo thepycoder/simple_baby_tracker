@@ -141,7 +141,8 @@
               <small> Voedingen</small>
               <br />
               <span class="text-muted"
-                >{count.foodFormulaAmount} ml + {count.foodSolidAmount} gr</span
+                >{count.foodFormulaAmount || 0} ml + {count.foodSolidAmount ||
+                  0} gr</span
               >
             </div>
           </div>

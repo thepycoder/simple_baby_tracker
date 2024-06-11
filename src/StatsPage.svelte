@@ -128,7 +128,7 @@
           <h5 class="card-header">{count.date}</h5>
           <div class="card-body row">
             <div class="col-6 text-center border-end">
-              <h1 class="d-inline">{formatTime(count.sleep).slice(0, -3)}</h1>
+              <h1 class="d-inline">{formatTime(count.sleep)}</h1>
               <small> Geslapen</small>
               <br />
               <span class="text-muted">{count.sleepCount} dutjes in totaal</span

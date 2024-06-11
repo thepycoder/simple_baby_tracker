@@ -9,13 +9,13 @@ export function formatTime(microseconds) {
   const paddedSeconds = String(remainingSeconds).padStart(2, "0");
 
   // Creating the final formatted string
-  return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+  return `${hours}:${paddedMinutes}`;
 }
 
 export function formatForCopy(date) {
   const hours = date.getHours();
   const minutes = date.getMinutes();
-  return `${hours}u${minutes}m`;
+  return `${hours}u${minutes}`;
 }
 
 export function formatCardTime(start, end) {

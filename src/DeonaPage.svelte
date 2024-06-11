@@ -50,7 +50,7 @@
     sleepEnd = new Date();
   }
   if ($foodEntries[0] && $sleepEntries[0]) {
-    inputText = `Lio heeft heeft laatst gegeten om ${formatForCopy($foodEntries[0].start)} en heeft geslapen tot ${formatForCopy(sleepEnd)}`;
+    inputText = `Lio heeft geslapen tot ${formatForCopy(sleepEnd)} en laatst gegeten om ${formatForCopy($foodEntries[0].start)}`;
   }
 
   console.log($foodEntries[0]);

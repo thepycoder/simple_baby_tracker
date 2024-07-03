@@ -12,7 +12,7 @@
 
   let isEating = false;
   let foodType = "formula";
-  let foodAmount = "200";
+  let foodAmount = "240";
   let eatDuration = 0;
   let clockFoodInterval = null;
   let foodStart = null;
@@ -24,7 +24,7 @@
     console.log("isEating to false");
     isEating = false;
     foodType = "formula";
-    foodAmount = "200";
+    foodAmount = "240";
     stopFoodClock();
   }
 

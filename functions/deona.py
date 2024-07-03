@@ -77,11 +77,11 @@ def record_exists(db, db_table: str, record: Voeding | Slaapje) -> bool:
 
 
 def read_from_deona():
-    standaard_hoeveelheid = 200
+    standaard_hoeveelheid = 240
     # Start a session
     session = requests.Session()
     db = firestore.client()
-    db_table = "dev_entries"
+    db_table = "entries"
 
     # Step 1: Load the login page
     login_url = "https://lokerenkdv.mijn-deona.be/Account/Login"
@@ -142,10 +142,10 @@ def read_from_deona():
                 open_slaapje = None
 
         elif message.startswith("Voeding"):
-            if "alles opgedronken!" in message:
+            if "alles op" in message:
                 # Sometime the caregiver uses "alles opgedroken" to denote a bottle completed
-                # at another time, sometime its "verder opgedronken". Decide if it is within a
-                # certain time window from the last to determine this.
+                # at another time, sometime its "verder opgedronken" and sometimes "alles op!".
+                # Decide if it is within a certain time window from the last to determine this.
 
                 # So either we're completing a bottle that was not finished before
                 if (
@@ -165,6 +165,15 @@ def read_from_deona():
                             amount=standaard_hoeveelheid,
                         )
                     )
+            elif "beetje melk overgelaten" in message:
+                # There is no number, so estimate it to be about 20ml ish under the standaard hoeveelheid
+                voedingen.append(
+                    Voeding(
+                        start=timestamp - timedelta(minutes=15),
+                        end=timestamp,
+                        amount=max(0, standaard_hoeveelheid - 20),
+                    )
+                )
             elif "over" in message:
                 # Get the number, it will always be in ml left in the bottle
                 amount = extract_number(message)
@@ -179,6 +188,15 @@ def read_from_deona():
                 # Get the number, it will always be in ml left in the bottle
                 voedingen[-1].amount = standaard_hoeveelheid
                 voedingen[-1].end = timestamp
+            elif match := re.search(r"(\d+) *g", message):
+                voedingen.append(
+                    Voeding(
+                        start=timestamp - timedelta(minutes=15),
+                        end=timestamp,
+                        amount=match.group(1),
+                        subtype="solid",
+                    )
+                )
 
     print("\n".join([f"{s.start} {s.end}" for s in slaapjes]))
     print("\n".join([f"{v.start} {v.end} {v.amount}" for v in voedingen]))

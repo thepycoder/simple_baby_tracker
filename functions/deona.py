@@ -126,7 +126,7 @@ def read_from_deona():
         message = div.find("div", class_="boekjeRegelBericht").text.strip()
 
         if message.startswith("Slapen"):
-            if "In slaap gevallen" in message:
+            if "In slaap gevallen" in message or "In bed gelegd" in message:
                 if open_slaapje:
                     raise DeonaException(
                         "2 keer na elkaar in slaap gevallen zonder wakker worden!"

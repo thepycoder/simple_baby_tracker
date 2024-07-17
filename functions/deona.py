@@ -140,6 +140,13 @@ def read_from_deona():
                 open_slaapje.end = timestamp
                 slaapjes.append(open_slaapje)
                 open_slaapje = None
+            elif "niet" in message and "slapen" in message:
+                if not open_slaapje:
+                    raise DeonaException(
+                        "Heeft niet kunnen slapen, maar er was nog geen slaapje gestart?"
+                    )
+                # Dan toch niet in slaap gevallen
+                open_slaapje = None
 
         elif message.startswith("Voeding"):
             if "alles op" in message:
@@ -177,13 +184,23 @@ def read_from_deona():
             elif "over" in message:
                 # Get the number, it will always be in ml left in the bottle
                 amount = extract_number(message)
-                voedingen.append(
-                    Voeding(
-                        start=timestamp - timedelta(minutes=15),
-                        end=timestamp,
-                        amount=standaard_hoeveelheid - amount,
+                # Apparently this, too, can be used to denote the same bottle being completed
+                if (
+                    len(voedingen) > 0
+                    and (timestamp - voedingen[-1].end) < timedelta(hours=1)
+                    and voedingen[-1].amount < standaard_hoeveelheid
+                ):
+                    voedingen[-1].amount = standaard_hoeveelheid - amount
+                    voedingen[-1].end = timestamp
+                else:
+                    # Or create a new bottle
+                    voedingen.append(
+                        Voeding(
+                            start=timestamp - timedelta(minutes=15),
+                            end=timestamp,
+                            amount=standaard_hoeveelheid - amount,
+                        )
                     )
-                )
             elif "verder opgedronken" in message:
                 # Get the number, it will always be in ml left in the bottle
                 voedingen[-1].amount = standaard_hoeveelheid
